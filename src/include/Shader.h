@@ -16,8 +16,9 @@
 class Shader
 {
 public:
-    Shader(const char* vertexPath, const char* fragmentPath);
-    ~Shader();
+    Shader();
+    Shader(const char* vertexSource, const char* fragmentSource);
+
 
     int getUniformLocation(const std::string& name) const;
     unsigned int getID() const;

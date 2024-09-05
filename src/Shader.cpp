@@ -25,12 +25,13 @@ const char* Shader::readFromPath(const char* path)
 	return shaderSource;
 }
 
-Shader::Shader(const char* vertexPath, const char* fragmentPath)
+Shader::Shader()
+    : m_ID{0}
+{}
+
+Shader::Shader(const char* vertexSource, const char* fragmentSource)
 	: m_ID{ 0 }
 {
-	const char* vertexSource = readFromPath(vertexPath);
-	const char* fragmentSource = readFromPath(fragmentPath);
-
 	m_ID = glCreateProgram();
 
 	unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -69,18 +70,11 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
 		glDeleteProgram(m_ID);
 	}
 
-	// BUILD SHADER:
 	glAttachShader(m_ID, vertexShader);
 	glAttachShader(m_ID, fragmentShader);
 	glLinkProgram(m_ID);
 
-	delete[] vertexSource; delete[] fragmentSource;
 	glDeleteShader(vertexShader), glDeleteShader(fragmentShader);
-}
-
-Shader::~Shader()
-{
-	glDeleteProgram(m_ID);
 }
 
 void Shader::use() const
