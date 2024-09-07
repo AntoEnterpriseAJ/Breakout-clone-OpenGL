@@ -126,7 +126,7 @@ void Shader::setFloat(const std::string& name, float value) const
 	glUniform1f(location, value);
 }
 
-void Shader::setVec4(const std::string& name, float x, float y, float z, float w) const
+void Shader::setVec4(const std::string& name, glm::vec4 vec) const
 {
 	int location = getUniformLocation(name);
 	if (location == -1)
@@ -135,10 +135,10 @@ void Shader::setVec4(const std::string& name, float x, float y, float z, float w
 		return;
 	}
 
-	glUniform4f(location, x, y, z, w);
+	glUniform4f(location, vec.x, vec.y, vec.z, vec.w);
 }
 
-void Shader::setVec3(const std::string& name, float x, float y, float z) const
+void Shader::setVec3(const std::string& name, glm::vec3 vec) const
 {
 	int location = getUniformLocation(name);
 	if (location == -1)
@@ -147,10 +147,10 @@ void Shader::setVec3(const std::string& name, float x, float y, float z) const
 		return;
 	}
 
-	glUniform3f(location, x, y, z);
+	glUniform3f(location, vec.x, vec.y, vec.z);
 }
 
-void Shader::setVec2(const std::string& name, float x, float y) const
+void Shader::setVec2(const std::string& name, glm::vec2 vec) const
 {
 	int location = getUniformLocation(name);
 	if (location == -1)
@@ -159,7 +159,7 @@ void Shader::setVec2(const std::string& name, float x, float y) const
 		return;
 	}
 
-	glUniform2f(location, x, y);
+	glUniform2f(location, vec.x, vec.y);
 }
 
 void Shader::setVec4(const std::string& name, float value) const
