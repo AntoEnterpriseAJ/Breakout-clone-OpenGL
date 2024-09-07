@@ -3,6 +3,8 @@
 #include "GLFW/glfw3.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb/stb_image.h"
+#include "glm/glm.hpp"
+#include "Game.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -48,7 +50,7 @@ int main(void)
     {
         int minor, major;
         glfwGetVersion(&minor, &major, nullptr);
-        std::cout << "Succesffuly initialized GLAD\nOpenGL " << minor << "." << major << std::endl;
+        std::cout << "Succesffuly initialized GLAD\nOpenGL " << major << "." << minor << std::endl;
     }
 
     int flags; glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
@@ -72,8 +74,11 @@ int main(void)
     while (!glfwWindowShouldClose(window))
     {
         /* Render here */
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        game.render();
+         
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
 
@@ -88,5 +93,5 @@ int main(void)
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-        glfwDestroyWindow(window);
+        glfwSetWindowShouldClose(window, GLFW_TRUE);
 }
