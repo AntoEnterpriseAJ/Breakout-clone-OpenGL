@@ -6,7 +6,7 @@ std::unordered_map<std::string, Shader> ResourceManager::m_shaders;
 
 Texture2D ResourceManager::loadTextureFromFile(const char* texturePath)
 {
-	stbi_set_flip_vertically_on_load(true);
+	stbi_set_flip_vertically_on_load(false);
 	
 	int width, height, channels;
 	unsigned char* imageData = stbi_load(texturePath, &width, &height, &channels, 0);
@@ -22,7 +22,7 @@ Texture2D ResourceManager::loadTextureFromFile(const char* texturePath)
 		std::cout << "WARNING: invalid texture format" << std::endl;
 
 	Texture2D texture;
-	texture.setImageFormat(format);
+	texture.setImageFormat(format); //TODO: fix
 	texture.setInternalFormat(format);
 
 	texture.generate(width, height, imageData);
@@ -57,7 +57,7 @@ void ResourceManager::loadShader(const char* vertexSourcePath, const char* fragm
     }
 }
 
-Texture2D ResourceManager::getTexture(const std::string& textureName)
+Texture2D& ResourceManager::getTexture(const std::string& textureName)
 {
     if (m_textures.contains(textureName))
     {
@@ -65,10 +65,11 @@ Texture2D ResourceManager::getTexture(const std::string& textureName)
     }
 
     std::cout << "WARNING: no texture with name: " << textureName << std::endl;
-    return {};
+    static Texture2D emptyTexture; // Create a static empty texture
+    return emptyTexture;
 }
 
-Shader ResourceManager::getShader(const std::string& shaderName)
+Shader& ResourceManager::getShader(const std::string& shaderName)
 {
     if (m_shaders.contains(shaderName))
     {
@@ -76,7 +77,9 @@ Shader ResourceManager::getShader(const std::string& shaderName)
     }
 
     std::cout << "WARNING: no shader with name: " << shaderName << std::endl;
-    return {};
+
+    static Shader emptyShader; // Create a static empty shader
+    return emptyShader;
 }
 
 void ResourceManager::clear()

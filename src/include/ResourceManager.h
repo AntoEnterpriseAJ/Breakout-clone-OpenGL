@@ -10,8 +10,8 @@ public:
     static void loadTexture(const char* texturePath, const std::string& textureName);
     static void loadShader(const char* vertexSourcePath, const char* fragmentSourcePath, const std::string& shaderName);
 
-    static Texture2D getTexture(const std::string& textureName);
-    static Shader getShader(const std::string& shaderName);
+    static Texture2D& getTexture(const std::string& textureName);
+    static Shader& getShader(const std::string& shaderName);
 
     static void clear();
 
