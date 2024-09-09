@@ -21,7 +21,7 @@ void Texture2D::generate(unsigned int width, unsigned int height, unsigned char*
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_filterMin);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, m_filterMag);
 	
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData);
+	glTexImage2D(GL_TEXTURE_2D, 0, m_imageFormat, width, height, 0, m_internalFormat, GL_UNSIGNED_BYTE, imageData);
 }
 
 void Texture2D::bind() const
