@@ -18,11 +18,14 @@ Texture2D ResourceManager::loadTextureFromFile(const char* texturePath)
 		format = GL_RGB;
 	else if (channels == 4)
 		format = GL_RGBA;
-	else 
-		std::cout << "WARNING: invalid texture format" << std::endl;
+	else
+    {
+		std::cout << "WARNING: invalid texture format at path: " << texturePath << std::endl;
+        exit(-1);
+    }
 
 	Texture2D texture;
-	texture.setImageFormat(format); //TODO: fix
+	texture.setImageFormat(format);
 	texture.setInternalFormat(format);
 
 	texture.generate(width, height, imageData);
