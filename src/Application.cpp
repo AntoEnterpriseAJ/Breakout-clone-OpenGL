@@ -5,14 +5,14 @@
 #include "stb/stb_image.h"
 #include "glm/glm.hpp"
 #include "Game.h"
+#include "ResourceManager.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void APIENTRY glDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum severity, 
                             GLsizei length, const char *message, const void *userParam);
 
-const unsigned int SCREEN_WIDTH = 800;
-const unsigned int SCREEN_HEIGHT = 600;
+static const unsigned int SCREEN_WIDTH = 800;
+static const unsigned int SCREEN_HEIGHT = 600;
 
 int main(void)
 {
@@ -28,7 +28,7 @@ int main(void)
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);  
 
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(640, 480, "BreakoutCLone", nullptr, nullptr);
+    window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "BreakoutCLone", nullptr, nullptr);
     if (!window)
     {
         glfwTerminate();
@@ -39,7 +39,6 @@ int main(void)
     glfwMakeContextCurrent(window);
     glfwSetWindowTitle(window, "BreakoutCLone");
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    glfwSetKeyCallback(window, key_callback);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
@@ -65,10 +64,58 @@ int main(void)
     else 
         std::cout << "Failed to initialize debug output" << std::endl;
 
+    //glfwSwapInterval(0); 
     glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     // ?
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // Generate grid vertices
+    std::vector<float> gridVertices;
+    int gridSpacing = 5;  // 1-pixel spacing grid
+    for (int x = 0; x <= SCREEN_WIDTH; x += gridSpacing)
+    {
+        float xNormalized = (2.0f * x / SCREEN_WIDTH) - 1.0f;
+
+        gridVertices.push_back(xNormalized);
+        gridVertices.push_back(1.0f);
+        gridVertices.push_back(xNormalized);
+        gridVertices.push_back(-1.0f);
+    }
+    for (int y = 0; y <= SCREEN_HEIGHT; y += gridSpacing)
+    {
+        float yNormalized = (2.0f * y / SCREEN_HEIGHT) - 1.0f;
+
+        gridVertices.push_back(-1.0f);
+        gridVertices.push_back(yNormalized);
+        gridVertices.push_back(1.0f);
+        gridVertices.push_back(yNormalized);
+    }
+
+    int numGridVertices = gridVertices.size() / 2;  // Number of vertices
+
+    // Set up VAO and VBO
+    ResourceManager::loadShader("res/shaders/test.vert", "res/shaders/test.frag", "testShader");
+    ResourceManager::getShader("testShader").use();
+
+    unsigned int gridVAO, gridVBO;
+    glGenVertexArrays(1, &gridVAO);
+    glGenBuffers(1, &gridVBO);
+
+    glBindVertexArray(gridVAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, gridVBO);
+    glBufferData(GL_ARRAY_BUFFER, gridVertices.size() * sizeof(float), &gridVertices[0], GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
+    Game game{window, SCREEN_WIDTH, SCREEN_HEIGHT};
+
+    game.init();
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
@@ -79,6 +126,12 @@ int main(void)
 
         game.render();
          
+        //ResourceManager::getShader("testShader").use();
+
+        //glBindVertexArray(gridVAO);
+        //glDrawArrays(GL_LINES, 0, numGridVertices);
+        //glBindVertexArray(0);
+
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
 
@@ -88,10 +141,4 @@ int main(void)
 
     glfwTerminate();
     return 0;
-}
-
-static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, GLFW_TRUE);
 }
