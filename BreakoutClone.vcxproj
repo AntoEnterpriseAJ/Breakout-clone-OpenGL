@@ -139,6 +139,8 @@
     <ClCompile Include="dependencies\include\glm\glm.cppm" />
     <ClCompile Include="src\Application.cpp" />
     <ClCompile Include="src\Game.cpp" />
+    <ClCompile Include="src\GameLevel.cpp" />
+    <ClCompile Include="src\GameObject.cpp" />
     <ClCompile Include="src\glad.c" />
     <ClCompile Include="src\ResourceManager.cpp" />
     <ClCompile Include="src\Shader.cpp" />
@@ -441,6 +443,8 @@
     <ClInclude Include="dependencies\include\KHR\khrplatform.h" />
     <ClInclude Include="dependencies\include\stb\stb_image.h" />
     <ClInclude Include="src\include\Game.h" />
+    <ClInclude Include="src\include\GameLevel.h" />
+    <ClInclude Include="src\include\GameObject.h" />
     <ClInclude Include="src\include\ResourceManager.h" />
     <ClInclude Include="src\include\Shader.h" />
     <ClInclude Include="src\include\SpriteRenderer.h" />
@@ -591,6 +595,7 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\OpenGLTests\res\images\awesomeface.png" />
+    <Image Include="E:\dev\OneDrive - Universitatea Transilvania din Brasov\other\Desktop\block.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
