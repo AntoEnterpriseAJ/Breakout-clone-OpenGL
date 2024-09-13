@@ -12,8 +12,8 @@ public:
     void draw(const std::unique_ptr<SpriteRenderer>& spriteRenderer) const;
     glm::vec2& getPositionRef();
 
-private:
-    glm::vec2 m_position, m_size, m_velocity;
+protected:
+    glm::vec2 m_position, m_size;
     glm::vec3 m_color;
     float m_rotationAngle;
     bool m_isSolid, m_isDestroyed;
