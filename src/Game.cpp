@@ -2,13 +2,17 @@
 #include "ResourceManager.h"
 #include "GLFW/glfw3.h"
 #include "glm/glm.hpp"
+#include "BallObject.h"
 #include <chrono>
 
 static float deltaTime           = 0.0f;
 static float lastTime            = 0.0f;
 static glm::vec2 paddleSize      = {100.0f, 20.0f};
 static glm::vec2 paddlePosition  = {static_cast<float>(800) / 2.0f - paddleSize.x / 2.0f, static_cast<float>(600) - paddleSize.y};
-static float paddleVelocity      = 500.0f;
+static float paddleSpeed         = 500.0f;
+
+static std::unique_ptr<BallObject> ball;
+static const glm::vec2 ballInitialVelocity = glm::vec2{100.0f, -350.0f};
 
 Game::Game(GLFWwindow* window,unsigned int width, unsigned int height)
     : m_window{window}, m_width{width}, m_height{height}, m_currentLevel{0}, m_state{GAME_ACTIVE}
@@ -29,6 +33,9 @@ void Game::render()
         m_levels[m_currentLevel].draw(m_spriteRenderer);
 
         playerPaddle->draw(m_spriteRenderer);
+
+        ball->move(deltaTime, m_width);
+        ball->draw(m_spriteRenderer);
     }
 }
 
@@ -37,21 +44,33 @@ void Game::processInput()
     if (glfwGetKey(m_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(m_window, GLFW_TRUE);
 
-    float velocity = paddleVelocity * deltaTime;
+    float paddleVelocity = paddleSpeed * deltaTime;
 
-    if (glfwGetKey(m_window, GLFW_KEY_A) == GLFW_PRESS || glfwGetKey(m_window, GLFW_KEY_LEFT == GLFW_PRESS))
+    if (glfwGetKey(m_window, GLFW_KEY_A) == GLFW_PRESS || glfwGetKey(m_window, GLFW_KEY_LEFT) == GLFW_PRESS)
     {
-        playerPaddle->getPositionRef() += glm::vec2{-1.0f, 0.0f} * velocity;
+        playerPaddle->getPositionRef().x -= paddleVelocity;
+        if (ball->onPaddle())
+        {
+            ball->getPositionRef().x -= paddleVelocity;
+        }
     }
-    else if (glfwGetKey(m_window, GLFW_KEY_D) == GLFW_PRESS || glfwGetKey(m_window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+    if (glfwGetKey(m_window, GLFW_KEY_D) == GLFW_PRESS || glfwGetKey(m_window, GLFW_KEY_RIGHT) == GLFW_PRESS)
     {
-        playerPaddle->getPositionRef() += glm::vec2{1.0f, 0.0f} * velocity;
+        playerPaddle->getPositionRef().x += paddleVelocity;
+        if (ball->onPaddle())
+        {
+            ball->getPositionRef().x += paddleVelocity;
+        }
+    }
+    if (glfwGetKey(m_window, GLFW_KEY_SPACE) == GLFW_PRESS)
+    {
+        ball->leavePaddle();
     }
 }
 
 void Game::init()
 {
-    ResourceManager::loadTexture("res/textures/awesomeface.png", "awesomeFace");
+    ResourceManager::loadTexture("res/textures/awesomeface.png", "ball");
     ResourceManager::loadTexture("res/textures/background.jpg", "background");
     ResourceManager::loadTexture("res/textures/block_solid.png", "block_solid");
     ResourceManager::loadTexture("res/textures/block.png", "block");
@@ -72,7 +91,14 @@ void Game::init()
     playerPaddle = std::make_unique<GameObject>(ResourceManager::getTexture("paddle"), paddlePosition,
                                                 paddleSize, glm::vec3{1.0f, 1.0f, 1.0f}, true);
 
+    float ballRadius = 15.0f;
+
+    ball = std::make_unique<BallObject>(ResourceManager::getTexture("ball")
+                                        , glm::vec2{paddlePosition.x + paddleSize.x / 2.0f - ballRadius, paddlePosition.y - ballRadius * 2.0f}
+                                        , ballInitialVelocity, ballRadius);
+
     m_spriteRenderer = std::make_unique<SpriteRenderer>(ResourceManager::getShader("spriteShader"));
+    
 
     Shader& shader = ResourceManager::getShader("spriteShader");
 
