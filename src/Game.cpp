@@ -5,6 +5,7 @@
 #include "BallObject.h"
 #include <chrono>
 
+// TODO: fix useless static variables
 static float deltaTime           = 0.0f;
 static float lastTime            = 0.0f;
 static glm::vec2 paddleSize      = {100.0f, 20.0f};
@@ -34,6 +35,7 @@ void Game::render()
 
         playerPaddle->draw(m_spriteRenderer);
 
+        handleCollisions(); 
         ball->move(deltaTime, m_width);
         ball->draw(m_spriteRenderer);
     }
@@ -65,6 +67,22 @@ void Game::processInput()
     if (glfwGetKey(m_window, GLFW_KEY_SPACE) == GLFW_PRESS)
     {
         ball->leavePaddle();
+    }
+}
+
+void Game::handleCollisions()
+{
+    GameLevel& currentLevel = m_levels[m_currentLevel];
+
+    for (auto& brick : currentLevel.getBricks())
+    {
+        if (brick.isDestroyed())
+            continue;
+
+        if (checkCollision(*ball, brick) && brick.isBreakable())
+        {
+            brick.destroy();
+        }
     }
 }
 
@@ -120,4 +138,30 @@ void Game::init()
 
     shader.setInt("spriteTexture", 0);
     shader.setMat4("projection", projection);
+}
+
+bool Game::checkCollision(const GameObject& obj1, const GameObject& obj2) // AABB for 2 rectangles
+{
+    bool xAxisCollision = obj1.getPosition().x + obj1.getSize().x > obj2.getPosition().x
+                          && obj2.getPosition().x + obj2.getSize().x > obj1.getPosition().x;
+    bool yAxisCollision = obj1.getPosition().y + obj1.getSize().y > obj2.getPosition().y
+                          && obj2.getPosition().y + obj2.getSize().y > obj1.getPosition().y;
+
+    return xAxisCollision && yAxisCollision;
+}
+
+bool Game::checkCollision(const BallObject& ball, const GameObject& obj) // AABB Circle collision
+{
+    float halfWidth  = obj.getSize().x / 2.0f;
+    float halfHeight = obj.getSize().y / 2.0f;
+
+    glm::vec2 clampVector{halfWidth, halfHeight};
+
+    glm::vec2 rectangleCenter = obj.getPosition() + obj.getSize() / 2.0f;
+    glm::vec2 ballCenter      = ball.getPosition() + ball.getSize() / 2.0f;
+
+    glm::vec2 clampedFromRecToBall = glm::clamp(ballCenter - rectangleCenter, -clampVector, clampVector);
+    glm::vec2 closestPoint = rectangleCenter + clampedFromRecToBall;
+
+    return glm::distance(closestPoint, ballCenter) < glm::length(ball.getSize() / 2.0f);
 }

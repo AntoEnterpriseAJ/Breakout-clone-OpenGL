@@ -2,6 +2,7 @@
 #include "SpriteRenderer.h"
 #include "GLFW/glfw3.h"
 #include "GameLevel.h"
+#include "BallObject.h"
 #include <memory>
 
 class Game
@@ -21,6 +22,9 @@ public:
     void init();
 private:
     void processInput();
+    bool checkCollision(const GameObject& obj1, const GameObject& obj2);
+    bool checkCollision(const BallObject& ball, const GameObject& obj);
+    void handleCollisions();
 private:
     GLFWwindow* m_window;
 	GameState m_state;
