@@ -9,11 +9,11 @@ void BallObject::move(float deltaTime, unsigned int width)
 {
     if (!m_onPaddle)
     {
-        if (m_position.y - m_radius <= 0.0f)
+        if (m_position.y <= 0.0f)
         {
             m_velocity.y = -m_velocity.y;
         }
-        else if (m_position.x - m_radius <= 0.0f || m_position.x + m_radius >= width)
+        else if (m_position.x <= 0.0f || m_position.x + 2 * m_radius >= width)
         {
             m_velocity.x = -m_velocity.x;
         }
