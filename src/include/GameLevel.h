@@ -11,6 +11,8 @@ public:
     void loadFromFile(const char* filePath, unsigned int levelHeight, unsigned int levelWidth);
     void draw(const std::unique_ptr<SpriteRenderer>& spriteRenderer);
 
+    std::vector<GameObject>& getBricks();
+
 private:
     void init(std::vector<std::vector<unsigned int>> level, unsigned int levelHeight, unsigned int levelWidth);
 private:

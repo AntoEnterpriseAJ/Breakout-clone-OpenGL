@@ -39,8 +39,16 @@ void GameLevel::draw(const std::unique_ptr<SpriteRenderer>& spriteRenderer)
 {
     for (const auto& brick : m_bricks)
     {
+        if (brick.isDestroyed())
+            continue;
+
         brick.draw(spriteRenderer);
     }
+}
+
+std::vector<GameObject>& GameLevel::getBricks()
+{
+    return m_bricks;
 }
 
 void GameLevel::init(std::vector<std::vector<unsigned int>> level, unsigned int levelHeight, unsigned int levelWidth)
@@ -63,12 +71,12 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> level, unsigned int 
             glm::vec2 position{x * brickWidth, y * brickHeight};
             glm::vec2 size{brickWidth, brickHeight};
             glm::vec3 color{0.0f};
-            bool isSolid = false;
+            bool isBreakable = true;
 
             if (brickType == 1)
             {
                 color = {0.8f, 0.8f, 0.7f};
-                isSolid = true;
+                isBreakable = false;
             }
             else if (brickType == 2)
             {
@@ -87,9 +95,9 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> level, unsigned int 
                 color = glm::vec3(1.0f, 0.5f, 0.0f);
             }
 
-            Texture2D& texture = isSolid ? ResourceManager::getTexture("block_solid") : ResourceManager::getTexture("block");
+            Texture2D& texture = isBreakable ? ResourceManager::getTexture("block") : ResourceManager::getTexture("block_solid");
 
-            m_bricks.emplace_back(texture, position, size, color, isSolid);
+            m_bricks.emplace_back(texture, position, size, color, isBreakable);
         }
     }
 }
