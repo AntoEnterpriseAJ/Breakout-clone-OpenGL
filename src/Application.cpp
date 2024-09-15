@@ -115,8 +115,6 @@ int main(void)
 
     Game game{window, SCREEN_WIDTH, SCREEN_HEIGHT};
 
-    game.init();
-
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
