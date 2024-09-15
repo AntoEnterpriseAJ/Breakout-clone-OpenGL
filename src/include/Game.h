@@ -11,12 +11,12 @@ class Game
 public:
     enum GameState
     {
-	    GAME_ACTIVE,
-	    GAME_MENU,
-	    GAME_WIN,
+        GAME_ACTIVE,
+        GAME_MENU,
+        GAME_WIN,
     };
 
-	Game(GLFWwindow* window,unsigned int width, unsigned int height);
+    Game(GLFWwindow* window,unsigned int width, unsigned int height);
 
     void render();
 
@@ -26,9 +26,9 @@ private:
     void handleCollisions();
 private:
     GLFWwindow*  m_window;
-	GameState    m_state;
-	unsigned int m_width, m_height;
-	unsigned int m_currentLevel;
+    GameState    m_state;
+    unsigned int m_width, m_height;
+    unsigned int m_currentLevel;
 
     CollisionManager                m_collisionManager;
     std::unique_ptr<SpriteRenderer> m_spriteRenderer;

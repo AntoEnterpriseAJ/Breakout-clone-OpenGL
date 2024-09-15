@@ -6,42 +6,42 @@ std::unordered_map<std::string, Shader> ResourceManager::m_shaders;
 
 Texture2D ResourceManager::loadTextureFromFile(const char* texturePath)
 {
-	stbi_set_flip_vertically_on_load(false);
-	
-	int width, height, channels;
-	unsigned char* imageData = stbi_load(texturePath, &width, &height, &channels, 0);
+    stbi_set_flip_vertically_on_load(false);
 
-	GLenum format;
-	if (channels == 1)
-		format = GL_RED;
-	else if (channels == 3)
-		format = GL_RGB;
-	else if (channels == 4)
-		format = GL_RGBA;
-	else
+    int width, height, channels;
+    unsigned char* imageData = stbi_load(texturePath, &width, &height, &channels, 0);
+
+    GLenum format;
+    if (channels == 1)
+        format = GL_RED;
+    else if (channels == 3)
+        format = GL_RGB;
+    else if (channels == 4)
+    format = GL_RGBA;
+    else
     {
-		std::cout << "WARNING: invalid texture format at path: " << texturePath << std::endl;
+        std::cout << "WARNING: invalid texture format at path: " << texturePath << std::endl;
         exit(-1);
     }
 
-	Texture2D texture;
-	texture.setImageFormat(format);
-	texture.setInternalFormat(format);
+    Texture2D texture;
+    texture.setImageFormat(format);
+    texture.setInternalFormat(format);
 
-	texture.generate(width, height, imageData);
+    texture.generate(width, height, imageData);
 
-	return texture;
+    return texture;
 }
 
 Shader ResourceManager::loadShaderFromFile(const char* vertexSourcePath, const char* fragmentSourcePath)
 {
-	const std::string& vs = readFromPath(vertexSourcePath);
-	const std::string& fs = readFromPath(fragmentSourcePath);
+    const std::string& vs = readFromPath(vertexSourcePath);
+    const std::string& fs = readFromPath(fragmentSourcePath);
 
-	const char* vertexSource    = vs.c_str();
-	const char* fragmentSource  = fs.c_str();
+    const char* vertexSource    = vs.c_str();
+    const char* fragmentSource  = fs.c_str();
 
-	return Shader{vertexSource, fragmentSource};
+    return Shader{vertexSource, fragmentSource};
 }
 
 void ResourceManager::loadTexture(const char* texturePath, const std::string& textureName)
@@ -103,15 +103,15 @@ void ResourceManager::clear()
 
 std::string ResourceManager::readFromPath(const char* path)
 {
-	std::ifstream fin(path);
-	if (!fin.is_open())
-	{
-		std::cout << "can't open file at: " << path << std::endl;
-		exit(-1);
-	}
+    std::ifstream fin(path);
+    if (!fin.is_open())
+    {
+        std::cout << "can't open file at: " << path << std::endl;
+        exit(-1);
+    }
 
-	std::stringstream ss;
-	ss << fin.rdbuf();
+    std::stringstream ss;
+    ss << fin.rdbuf();
 
-	return ss.str();
+    return ss.str();
 }
