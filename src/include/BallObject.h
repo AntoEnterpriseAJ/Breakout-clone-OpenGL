@@ -8,8 +8,10 @@ public:
 
     void move(float deltaTime, unsigned int width);
     void leavePaddle();
+    glm::vec2& getVelocityRef();
 
     bool onPaddle() const;
+    glm::vec2 getVelocity() const;
 
 private:
     glm::vec2 m_velocity;

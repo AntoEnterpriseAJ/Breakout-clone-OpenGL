@@ -22,6 +22,11 @@ void BallObject::move(float deltaTime, unsigned int width)
     }
 }
 
+glm::vec2& BallObject::getVelocityRef()
+{
+    return m_velocity;
+}
+
 void BallObject::leavePaddle()
 {
     m_onPaddle = false;
@@ -30,6 +35,11 @@ void BallObject::leavePaddle()
 bool BallObject::onPaddle() const
 {
     return m_onPaddle;
+}
+
+glm::vec2 BallObject::getVelocity() const
+{
+    return m_velocity;
 }
 
 
