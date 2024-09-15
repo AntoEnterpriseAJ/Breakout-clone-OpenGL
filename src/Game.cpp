@@ -3,7 +3,7 @@
 #include "GLFW/glfw3.h"
 #include "glm/glm.hpp"
 #include "BallObject.h"
-#include <chrono>
+#include <tuple>
 
 // TODO: fix useless static variables
 static float deltaTime           = 0.0f;
@@ -17,7 +17,9 @@ static const glm::vec2 ballInitialVelocity = glm::vec2{100.0f, -350.0f};
 
 Game::Game(GLFWwindow* window,unsigned int width, unsigned int height)
     : m_window{window}, m_width{width}, m_height{height}, m_currentLevel{0}, m_state{GAME_ACTIVE}
-{}
+{
+    init();
+}
 
 void Game::render()
 {
@@ -72,6 +74,7 @@ void Game::processInput()
 
 void Game::handleCollisions()
 {
+    using Direction = CollisionManager::Direction;
     GameLevel& currentLevel = m_levels[m_currentLevel];
 
     for (auto& brick : currentLevel.getBricks())
@@ -79,9 +82,40 @@ void Game::handleCollisions()
         if (brick.isDestroyed())
             continue;
 
-        if (checkCollision(*ball, brick) && brick.isBreakable())
+        auto [brickCollision, direction, offset] = m_collisionManager.getCollisionStatus(*ball, brick);
+
+        if (brickCollision)
         {
-            brick.destroy();
+            ball->getPositionRef() += offset;   // get the ball out of the object it collides with
+
+            if (brick.isBreakable())
+            {
+                brick.destroy();
+            }
+
+            if (direction == Direction::LEFT || direction == Direction::RIGHT)
+            {
+                ball->getVelocityRef().x = -ball->getVelocityRef().x;
+            }
+            else if (direction == Direction::UP || direction == Direction::DOWN)
+            {
+                ball->getVelocityRef().y = -ball->getVelocityRef().y;
+            }
+        }
+    }
+
+    if (!ball->onPaddle())
+    {
+        auto [paddleCollision, direction, offset] = m_collisionManager.getCollisionStatus(*ball, *playerPaddle);
+
+        if (paddleCollision)
+        {
+            glm::vec2 paddleCenter = playerPaddle->getPosition() + playerPaddle->getSize() / 2.0f;
+            glm::vec2 ballCenter   = ball->getPosition() + ball->getSize() / 2.0f;
+
+            glm::vec2 bounceDirection = glm::normalize(ballCenter - paddleCenter);
+
+            ball->getVelocityRef() = bounceDirection * glm::length(ball->getVelocity());
         }
     }
 }
@@ -138,30 +172,4 @@ void Game::init()
 
     shader.setInt("spriteTexture", 0);
     shader.setMat4("projection", projection);
-}
-
-bool Game::checkCollision(const GameObject& obj1, const GameObject& obj2) // AABB for 2 rectangles
-{
-    bool xAxisCollision = obj1.getPosition().x + obj1.getSize().x > obj2.getPosition().x
-                          && obj2.getPosition().x + obj2.getSize().x > obj1.getPosition().x;
-    bool yAxisCollision = obj1.getPosition().y + obj1.getSize().y > obj2.getPosition().y
-                          && obj2.getPosition().y + obj2.getSize().y > obj1.getPosition().y;
-
-    return xAxisCollision && yAxisCollision;
-}
-
-bool Game::checkCollision(const BallObject& ball, const GameObject& obj) // AABB Circle collision
-{
-    float halfWidth  = obj.getSize().x / 2.0f;
-    float halfHeight = obj.getSize().y / 2.0f;
-
-    glm::vec2 clampVector{halfWidth, halfHeight};
-
-    glm::vec2 rectangleCenter = obj.getPosition() + obj.getSize() / 2.0f;
-    glm::vec2 ballCenter      = ball.getPosition() + ball.getSize() / 2.0f;
-
-    glm::vec2 clampedFromRecToBall = glm::clamp(ballCenter - rectangleCenter, -clampVector, clampVector);
-    glm::vec2 closestPoint = rectangleCenter + clampedFromRecToBall;
-
-    return glm::distance(closestPoint, ballCenter) < glm::length(ball.getSize() / 2.0f);
 }

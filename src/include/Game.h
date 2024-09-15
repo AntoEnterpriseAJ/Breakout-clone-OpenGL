@@ -3,6 +3,7 @@
 #include "GLFW/glfw3.h"
 #include "GameLevel.h"
 #include "BallObject.h"
+#include "CollisionManager.h"
 #include <memory>
 
 class Game
@@ -19,19 +20,18 @@ public:
 
     void render();
 
-    void init();
 private:
+    void init();
     void processInput();
-    bool checkCollision(const GameObject& obj1, const GameObject& obj2);
-    bool checkCollision(const BallObject& ball, const GameObject& obj);
     void handleCollisions();
 private:
-    GLFWwindow* m_window;
-	GameState m_state;
+    GLFWwindow*  m_window;
+	GameState    m_state;
 	unsigned int m_width, m_height;
 	unsigned int m_currentLevel;
 
+    CollisionManager                m_collisionManager;
     std::unique_ptr<SpriteRenderer> m_spriteRenderer;
-    std::vector<GameLevel> m_levels;
-    std::unique_ptr<GameObject> playerPaddle;
+    std::vector<GameLevel>          m_levels;
+    std::unique_ptr<GameObject>     playerPaddle;
 };
