@@ -3,6 +3,7 @@
 #include "GLFW/glfw3.h"
 #include "glm/glm.hpp"
 #include "BallObject.h"
+#include "ParticleGenerator.h"
 
 // TODO: fix useless static variables
 static float deltaTime           = 0.0f;
@@ -10,9 +11,13 @@ static float lastTime            = 0.0f;
 static glm::vec2 paddleSize      = {100.0f, 20.0f};
 static glm::vec2 paddlePosition  = {static_cast<float>(800) / 2.0f - paddleSize.x / 2.0f, static_cast<float>(600) - paddleSize.y};
 static float paddleSpeed         = 500.0f;
+static float ballRadius          = 15.0f;
+static glm::vec2 ballPosition    = {paddlePosition.x + paddleSize.x / 2.0f - ballRadius, paddlePosition.y - ballRadius * 2.0f};
+
+static const glm::vec2 ballInitialVelocity = glm::vec2{0.0f, -350.0f};
 
 static std::unique_ptr<BallObject> ball;
-static const glm::vec2 ballInitialVelocity = glm::vec2{0.0f, -350.0f};
+static std::unique_ptr<ParticleGenerator> particleGenerator;
 
 Game::Game(GLFWwindow* window,unsigned int width, unsigned int height)
     : m_window{window}, m_width{width}, m_height{height}, m_currentLevel{0}, m_state{GAME_ACTIVE}
@@ -39,6 +44,9 @@ void Game::render()
         ball->move(deltaTime, m_width);
         handleCollisions();
         ball->draw(m_spriteRenderer);
+
+        particleGenerator->update(*ball, deltaTime);
+        particleGenerator->render(ResourceManager::getShader("particleShader"));
     }
 }
 
@@ -128,8 +136,10 @@ void Game::init()
     ResourceManager::loadTexture("res/textures/block_solid.png", "block_solid");
     ResourceManager::loadTexture("res/textures/block.png", "block");
     ResourceManager::loadTexture("res/textures/paddle.png", "paddle");
+    ResourceManager::loadTexture("res/textures/particle.png", "particle");
 
     ResourceManager::loadShader("res/shaders/sprite.vert", "res/shaders/sprite.frag", "spriteShader");
+    ResourceManager::loadShader("res/shaders/particle.vert", "res/shaders/particle.frag", "particleShader");
 
     GameLevel level1; level1.loadFromFile("res/levels/lvl1.txt", m_height / 2, m_width);
     GameLevel level2; level2.loadFromFile("res/levels/lvl2.txt", m_height / 2, m_width);
@@ -141,22 +151,13 @@ void Game::init()
     m_levels.push_back(level3);
     m_levels.push_back(level4);
 
-    playerPaddle = std::make_unique<GameObject>(ResourceManager::getTexture("paddle"), paddlePosition,
-                                                paddleSize, glm::vec3{1.0f, 1.0f, 1.0f}, true);
+    ParticleGenerator::Particle particle{ResourceManager::getTexture("particle"), 10.0f, 0.2f, 1.0f};
 
-    float ballRadius = 15.0f;
-
-    ball = std::make_unique<BallObject>(ResourceManager::getTexture("ball")
-                                        , glm::vec2{paddlePosition.x + paddleSize.x / 2.0f - ballRadius, paddlePosition.y - ballRadius * 2.0f}
-                                        , ballInitialVelocity, ballRadius);
-
-    m_spriteRenderer = std::make_unique<SpriteRenderer>(ResourceManager::getShader("spriteShader"));
+    playerPaddle        = std::make_unique<GameObject>(ResourceManager::getTexture("paddle"), paddlePosition, paddleSize);
+    ball                = std::make_unique<BallObject>(ResourceManager::getTexture("ball"), ballPosition, ballInitialVelocity, ballRadius);
+    m_spriteRenderer    = std::make_unique<SpriteRenderer>(ResourceManager::getShader("spriteShader"));
+    particleGenerator   = std::make_unique<ParticleGenerator>(particle, 50);
     
-
-    Shader& shader = ResourceManager::getShader("spriteShader");
-
-    shader.use();
-
     auto orthographicProjection = [](float l, float r, float b, float t, float n, float f){
         glm::mat4 ortho = {
             2.0f / (r - l)  , 0.0f           , 0.0f             , - (r + l) / (r - l),
@@ -168,9 +169,13 @@ void Game::init()
         return glm::transpose(ortho);
     };
 
-    glm::mat4 projection = orthographicProjection(0.0f, static_cast<float>(m_width), 
-                                                  static_cast<float>(m_height), 0.0f, -1.0f, 1.0f);
+    glm::mat4 projection = orthographicProjection(0.0f, (float)m_width, (float)m_height, 0.0f, -1.0f, 1.0f);
 
-    shader.setInt("spriteTexture", 0);
-    shader.setMat4("projection", projection);
+    Shader& spriteShader = ResourceManager::getShader("spriteShader");
+    spriteShader.use();
+    spriteShader.setMat4("projection", projection);
+
+    Shader& particleShader = ResourceManager::getShader("particleShader");
+    particleShader.use();
+    particleShader.setMat4("projection", projection);
 }
