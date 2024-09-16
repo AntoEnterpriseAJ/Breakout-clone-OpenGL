@@ -7,7 +7,8 @@ class GameObject
 {
 public:
     GameObject();
-    GameObject(const Texture2D& sprite, glm::vec2 pos, glm::vec2 size, glm::vec3 color, bool isBreakable);
+    GameObject(const Texture2D& sprite, glm::vec2 pos, glm::vec2 size,
+               glm::vec3 color = {1.0f, 1.0f, 1.0f}, bool isBreakable = true);
 
     void draw(const std::unique_ptr<SpriteRenderer>& spriteRenderer) const;
     glm::vec2 getPosition() const;
