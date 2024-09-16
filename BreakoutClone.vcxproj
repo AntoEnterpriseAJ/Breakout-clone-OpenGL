@@ -144,6 +144,7 @@
     <ClCompile Include="src\GameLevel.cpp" />
     <ClCompile Include="src\GameObject.cpp" />
     <ClCompile Include="src\glad.c" />
+    <ClCompile Include="src\ParticleGenerator.cpp" />
     <ClCompile Include="src\ResourceManager.cpp" />
     <ClCompile Include="src\Shader.cpp" />
     <ClCompile Include="src\SpriteRenderer.cpp" />
@@ -449,6 +450,7 @@
     <ClInclude Include="src\include\Game.h" />
     <ClInclude Include="src\include\GameLevel.h" />
     <ClInclude Include="src\include\GameObject.h" />
+    <ClInclude Include="src\include\ParticleGenerator.h" />
     <ClInclude Include="src\include\ResourceManager.h" />
     <ClInclude Include="src\include\Shader.h" />
     <ClInclude Include="src\include\SpriteRenderer.h" />
@@ -600,6 +602,7 @@
   <ItemGroup>
     <Image Include="..\OpenGLTests\res\images\awesomeface.png" />
     <Image Include="E:\dev\OneDrive - Universitatea Transilvania din Brasov\other\Desktop\block.png" />
+    <Image Include="E:\dev\OneDrive - Universitatea Transilvania din Brasov\other\Desktop\particle.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
