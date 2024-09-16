@@ -35,23 +35,23 @@ void SpriteRenderer::drawSprite(const Texture2D& texture, const glm::vec2& posit
     m_shader.setVec3("spriteColor", color);
 
     glBindVertexArray(m_quadVAO);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)0);
 }
 
 void SpriteRenderer::initRenderData()
 {
-    //TODO: add an EBO
-    unsigned int quadVBO;
+    unsigned int quadVBO, quadEBO;
 
     float vertices[] = { 
-    // pos      // tex
-    0.0f, 1.0f, 0.0f, 1.0f,
-    1.0f, 0.0f, 1.0f, 0.0f,
-    0.0f, 0.0f, 0.0f, 0.0f, 
-    
-    0.0f, 1.0f, 0.0f, 1.0f,
-    1.0f, 1.0f, 1.0f, 1.0f,
-    1.0f, 0.0f, 1.0f, 0.0f,
+    // pos          // tex
+    0.0f, 0.0f,     0.0f, 0.0f, 
+    1.0f, 0.0f,     1.0f, 0.0f,
+    0.0f, 1.0f,     0.0f, 1.0f,
+    1.0f, 1.0f,     1.0f, 1.0f,
+    };
+
+    unsigned int indices[] = {
+        0, 1, 2, 2, 3, 1 
     };
 
     glGenVertexArrays(1, &m_quadVAO);
@@ -60,6 +60,10 @@ void SpriteRenderer::initRenderData()
     glGenBuffers(1, &quadVBO);
     glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glGenBuffers(1, &quadEBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadEBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
