@@ -3,7 +3,6 @@
 #include "GLFW/glfw3.h"
 #include "glm/glm.hpp"
 #include "BallObject.h"
-#include <tuple>
 
 // TODO: fix useless static variables
 static float deltaTime           = 0.0f;
@@ -13,7 +12,7 @@ static glm::vec2 paddlePosition  = {static_cast<float>(800) / 2.0f - paddleSize.
 static float paddleSpeed         = 500.0f;
 
 static std::unique_ptr<BallObject> ball;
-static const glm::vec2 ballInitialVelocity = glm::vec2{100.0f, -350.0f};
+static const glm::vec2 ballInitialVelocity = glm::vec2{0.0f, -350.0f};
 
 Game::Game(GLFWwindow* window,unsigned int width, unsigned int height)
     : m_window{window}, m_width{width}, m_height{height}, m_currentLevel{0}, m_state{GAME_ACTIVE}
@@ -37,8 +36,8 @@ void Game::render()
 
         playerPaddle->draw(m_spriteRenderer);
 
-        handleCollisions(); 
         ball->move(deltaTime, m_width);
+        handleCollisions();
         ball->draw(m_spriteRenderer);
     }
 }
@@ -101,6 +100,8 @@ void Game::handleCollisions()
             {
                 ball->getVelocityRef().y = -ball->getVelocityRef().y;
             }
+
+            break;
         }
     }
 
