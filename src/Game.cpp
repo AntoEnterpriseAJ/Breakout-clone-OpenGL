@@ -151,12 +151,12 @@ void Game::init()
     m_levels.push_back(level3);
     m_levels.push_back(level4);
 
-    ParticleGenerator::Particle particle{ResourceManager::getTexture("particle"), 10.0f, 0.2f, 1.0f};
+    ParticleGenerator::Particle particle{ResourceManager::getTexture("particle"), 20.0f, 1.0f, 0.5};
 
     playerPaddle        = std::make_unique<GameObject>(ResourceManager::getTexture("paddle"), paddlePosition, paddleSize);
     ball                = std::make_unique<BallObject>(ResourceManager::getTexture("ball"), ballPosition, ballInitialVelocity, ballRadius);
     m_spriteRenderer    = std::make_unique<SpriteRenderer>(ResourceManager::getShader("spriteShader"));
-    particleGenerator   = std::make_unique<ParticleGenerator>(particle, 50);
+    particleGenerator   = std::make_unique<ParticleGenerator>(particle, 100);
     
     auto orthographicProjection = [](float l, float r, float b, float t, float n, float f){
         glm::mat4 ortho = {
