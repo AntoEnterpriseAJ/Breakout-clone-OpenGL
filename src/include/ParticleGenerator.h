@@ -13,7 +13,7 @@ public:
 
         float       size;
         float       lifeTime;
-        float       fadeRate;
+        float       dieRate;
 
         glm::vec2   velocity = {0.0f, 0.0f};
         glm::vec2   position = {0.0f, 0.0f};
@@ -21,13 +21,19 @@ public:
         bool isAlive() const {return lifeTime > 0;};
     };
 
-    ParticleGenerator(const Particle& particle, int maxParticleCount);
+    ParticleGenerator(Particle& particle, int maxParticleCount);
 
     void render(const Shader& particleShader);
     void update(const BallObject& obj, float deltaTime);
 
 private:
-    int firstUnusedParticle() const;
+    struct BufferStatus
+    {
+        bool wait;
+        unsigned int spawnIndex = 0;
+    };
+
+    BufferStatus checkSpawn();
     void spawnParticle(Particle& particle, const BallObject& obj);
 private:
     std::vector<Particle> m_particles;
