@@ -151,7 +151,7 @@ void Game::init()
     m_levels.push_back(level3);
     m_levels.push_back(level4);
 
-    ParticleGenerator::Particle particle{ResourceManager::getTexture("particle"), 20.0f, 1.0f, 0.5};
+    ParticleGenerator::Particle particle{ResourceManager::getTexture("particle"), 15.0f, 1.0f, 0.5};
 
     playerPaddle        = std::make_unique<GameObject>(ResourceManager::getTexture("paddle"), paddlePosition, paddleSize);
     ball                = std::make_unique<BallObject>(ResourceManager::getTexture("ball"), ballPosition, ballInitialVelocity, ballRadius);
