@@ -15,8 +15,10 @@ public:
         float       lifeTime;
         float       dieRate;
 
-        glm::vec2   velocity = {0.0f, 0.0f};
-        glm::vec2   position = {0.0f, 0.0f};
+        glm::vec2   velocity    = {0.0f, 0.0f};
+        glm::vec2   position    = {0.0f, 0.0f};
+        float       rotateAngle = 0.0f;
+        float       rotateSpeed = 0.0f;
 
         bool isAlive() const {return lifeTime > 0;};
     };

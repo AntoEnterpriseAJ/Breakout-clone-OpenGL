@@ -50,13 +50,19 @@ void ParticleGenerator::render(const Shader& particleShader)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     glBindVertexArray(m_VAO);
 
+    glm::mat4 model{1.0f};
+
     for (const auto& particle : m_particles)
     {
         if (particle.isAlive())
         {
             particle.sprite.bind();
-            particleShader.setFloat("scale", particle.size);
-            particleShader.setVec2("offset", particle.position);
+            model = glm::mat4{1.0f};
+            model = glm::translate(model, {particle.position, 0.0f});
+            model = glm::rotate(model, glm::radians(particle.rotateAngle), glm::vec3{0.0f, 0.0f, 1.0f});
+            model = glm::scale(model, glm::vec3{particle.size, particle.size, 0.0f});
+
+            particleShader.setMat4("model", model);
 
             float fadeFactor = particle.lifeTime / m_particleLifeTime;
             particleShader.setFloat("fadeFactor", fadeFactor);
@@ -86,8 +92,9 @@ void ParticleGenerator::update(const BallObject& obj, float deltaTime)
     {
         if (particle.isAlive())
         {
-            particle.position += particle.velocity * deltaTime;
-            particle.lifeTime -= particle.dieRate * deltaTime;
+            particle.position    += particle.velocity * deltaTime;
+            particle.lifeTime    -= particle.dieRate * deltaTime;
+            particle.rotateAngle += particle.rotateSpeed * deltaTime;
         }
     }
 }
@@ -109,7 +116,8 @@ ParticleGenerator::BufferStatus ParticleGenerator::checkSpawn()
 
 void ParticleGenerator::spawnParticle(Particle& particle, const BallObject& obj)
 {
-    particle.velocity = -obj.getVelocity() * 0.1f;
-    particle.position = obj.getPosition() + glm::vec2{rand() % 20 - 10, rand() % 20 - 10} + particle.velocity;
-    particle.lifeTime = m_particleLifeTime;
+    particle.velocity    = -obj.getVelocity() * 0.05f;
+    particle.position    = obj.getPosition() + glm::vec2{rand() % 20 - 10, rand() % 20 - 10} + particle.velocity;
+    particle.lifeTime    = m_particleLifeTime;
+    particle.rotateSpeed = (rand() % 20 - 10) * 10.0f;
 }
