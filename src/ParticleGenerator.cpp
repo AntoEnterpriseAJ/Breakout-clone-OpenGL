@@ -117,7 +117,7 @@ ParticleGenerator::BufferStatus ParticleGenerator::checkSpawn()
 void ParticleGenerator::spawnParticle(Particle& particle, const BallObject& obj)
 {
     particle.velocity    = -obj.getVelocity() * 0.05f;
-    particle.position    = obj.getPosition() + glm::vec2{rand() % 20 - 10, rand() % 20 - 10} + particle.velocity;
+    particle.position    = obj.getPosition() + obj.getSize() / 2.0f + glm::vec2{rand() % 20 - 10, rand() % 20 - 10} + particle.velocity;
     particle.lifeTime    = m_particleLifeTime;
     particle.rotateSpeed = (rand() % 20 - 10) * 10.0f;
 }

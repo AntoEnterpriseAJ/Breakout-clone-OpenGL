@@ -43,10 +43,10 @@ void Game::render()
 
         ball->move(deltaTime, m_width);
         handleCollisions();
-        ball->draw(m_spriteRenderer);
-
         particleGenerator->update(*ball, deltaTime);
         particleGenerator->render(ResourceManager::getShader("particleShader"));
+        ball->draw(m_spriteRenderer);
+
     }
 }
 
