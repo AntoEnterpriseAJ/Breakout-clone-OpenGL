@@ -28,7 +28,7 @@ int main(void)
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);  
 
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "BreakoutCLone", nullptr, nullptr);
+    window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "BreakoutClone", nullptr, nullptr);
     if (!window)
     {
         glfwTerminate();
@@ -42,7 +42,7 @@ int main(void)
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
-        std::cout << "Failed to initialize GLAD" << std::endl;
+        std::cout << "WARNING: Failed to initialize GLAD" << std::endl;
         return -1;
     }
     else
@@ -62,13 +62,46 @@ int main(void)
         std::cout << "Succesfully initialized debug output" << std::endl;
     }
     else 
-        std::cout << "Failed to initialize debug output" << std::endl;
+        std::cout << "WARNING: Failed to initialize debug output" << std::endl;
 
     //glfwSwapInterval(0); 
     glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-    // ?
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // FBO:
+    unsigned int FBO;
+    glGenFramebuffers(1, &FBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+
+    // COLOR ATTACHMENT:
+    unsigned int textureColorbuffer;
+    glGenTextures(1, &textureColorbuffer);
+    glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCREEN_WIDTH, SCREEN_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorbuffer, 0);
+
+    // DEPTH AND STENCIL RBO ATTACHMENT:
+    unsigned int RBO;
+    glGenRenderbuffers(1, &RBO);
+    glBindRenderbuffer(GL_RENDERBUFFER, RBO);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCREEN_WIDTH, SCREEN_HEIGHT);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT , GL_RENDERBUFFER, RBO);
+
+    if (glad_glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
+    {
+        std::cout << "Succesffuly created the framebuffer" << std::endl;
+    }
+    else
+    {
+        std::cout << "WARNING: Framebuffer creation failed\n" << std::endl;
+        exit(-1);
+    }
 
     // Generate grid vertices
     std::vector<float> gridVertices;
@@ -113,7 +146,46 @@ int main(void)
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
+    // SCREEN QUAD
+    float screenQuadVertices[] = {
+        //positions     //texPos  
+        -1.0f, -1.0f,   0.0f, 0.0f,
+         1.0f, -1.0f,   1.0f, 0.0f,
+         1.0f,  1.0f,   1.0f, 1.0f,
+        -1.0f,  1.0f,   0.0f, 1.0f,
+    };
+
+    unsigned int screenQuadIndices[] = {
+        0, 1, 2, 2, 3, 0
+    };
+
+    unsigned int screenQuadVAO, screenQuadVBO, screenQuadEBO;
+    glGenVertexArrays(1, &screenQuadVAO);
+    glBindVertexArray(screenQuadVAO);
+
+    glGenBuffers(1, &screenQuadVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, screenQuadVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(screenQuadVertices), screenQuadVertices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)2);
+
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+
+    glGenBuffers(1, &screenQuadEBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, screenQuadEBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(screenQuadIndices), screenQuadIndices, GL_STATIC_DRAW);
+
+    // postFX shader
+    ResourceManager::loadShader("res/shaders/postFX.vert", "res/shaders/postFX.frag", "postFX");
+    Shader& shaderPostFX = ResourceManager::getShader("postFX");
+
     Game game{window, SCREEN_WIDTH, SCREEN_HEIGHT};
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // WIREFRAME MODE
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
@@ -121,9 +193,21 @@ int main(void)
         /* Render here */
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+        glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 
         game.render();
          
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        shaderPostFX.use();
+        shaderPostFX.setInt("tex", 0);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, screenQuadIndices);
+
         //ResourceManager::getShader("testShader").use();
 
         //glBindVertexArray(gridVAO);
@@ -136,6 +220,10 @@ int main(void)
         /* Poll for and process events */
         glfwPollEvents();
     }
+
+    glDeleteVertexArrays(1, &gridVAO);
+    glDeleteBuffers(1, &gridVBO);
+    glDeleteFramebuffers(1, &FBO);
 
     glfwTerminate();
     return 0;
