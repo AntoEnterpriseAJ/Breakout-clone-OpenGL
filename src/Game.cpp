@@ -4,6 +4,7 @@
 #include "glm/glm.hpp"
 #include "BallObject.h"
 #include "ParticleGenerator.h"
+#include "PostProcessor.h"
 
 // TODO: fix useless static variables
 static float deltaTime           = 0.0f;
@@ -16,8 +17,9 @@ static glm::vec2 ballPosition    = {paddlePosition.x + paddleSize.x / 2.0f - bal
 
 static const glm::vec2 ballInitialVelocity = glm::vec2{0.0f, -350.0f};
 
-static std::unique_ptr<BallObject> ball;
-static std::unique_ptr<ParticleGenerator> particleGenerator;
+static std::unique_ptr<BallObject>          ball;
+static std::unique_ptr<ParticleGenerator>   particleGenerator;
+static std::unique_ptr<PostProcessor>       postProcessor; 
 
 Game::Game(GLFWwindow* window,unsigned int width, unsigned int height)
     : m_window{window}, m_width{width}, m_height{height}, m_currentLevel{0}, m_state{GAME_ACTIVE}
@@ -34,11 +36,10 @@ void Game::render()
     processInput();
     if (m_state == GAME_ACTIVE)
     {
-        const Texture2D& background = ResourceManager::getTexture("background");
-        m_spriteRenderer->drawSprite(background, {0.0f, 0.0f}, {m_width, m_height}, 0.0f);
+        postProcessor->beginOffscreenRendering();
 
+        m_spriteRenderer->drawSprite(ResourceManager::getTexture("background"), {0.0f, 0.0f}, {m_width, m_height}, 0.0f);
         m_levels[m_currentLevel].draw(m_spriteRenderer);
-
         playerPaddle->draw(m_spriteRenderer);
 
         ball->move(deltaTime, m_width);
@@ -47,6 +48,8 @@ void Game::render()
         particleGenerator->render(ResourceManager::getShader("particleShader"));
         ball->draw(m_spriteRenderer);
 
+        postProcessor->endOffscreenRendering();
+        postProcessor->render();
     }
 }
 
@@ -140,6 +143,7 @@ void Game::init()
 
     ResourceManager::loadShader("res/shaders/sprite.vert", "res/shaders/sprite.frag", "spriteShader");
     ResourceManager::loadShader("res/shaders/particle.vert", "res/shaders/particle.frag", "particleShader");
+    ResourceManager::loadShader("res/shaders/postFX.vert", "res/shaders/postFX.frag", "postFX");
 
     GameLevel level1; level1.loadFromFile("res/levels/lvl1.txt", m_height / 2, m_width);
     GameLevel level2; level2.loadFromFile("res/levels/lvl2.txt", m_height / 2, m_width);
@@ -157,7 +161,8 @@ void Game::init()
     ball                = std::make_unique<BallObject>(ResourceManager::getTexture("ball"), ballPosition, ballInitialVelocity, ballRadius);
     m_spriteRenderer    = std::make_unique<SpriteRenderer>(ResourceManager::getShader("spriteShader"));
     particleGenerator   = std::make_unique<ParticleGenerator>(particle, 100);
-    
+    postProcessor       = std::make_unique<PostProcessor>(ResourceManager::getShader("postFX"), m_width, m_height);
+
     auto orthographicProjection = [](float l, float r, float b, float t, float n, float f){
         glm::mat4 ortho = {
             2.0f / (r - l)  , 0.0f           , 0.0f             , - (r + l) / (r - l),
