@@ -70,7 +70,7 @@ void PostProcessor::render() const
     glBindVertexArray(m_screenQuadVAO);
     m_shader.use();
     m_shader.setInt("tex", 0);
-    m_shader.setBool("effectNormal", true);
+    m_shader.setBool("effectSharpen", true);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_intermediaryColorBuffer);
 
