@@ -1,5 +1,6 @@
 #pragma once
 #include "Shader.h"
+#include <array>
 
 class PostProcessor
 {
@@ -16,6 +17,8 @@ public:
     void beginOffscreenRendering();
     void endOffscreenRendering();
     void render() const;
+    void startEffect(const std::string& effectName) const;
+    void stopEffect(const std::string& effectName) const;
 private:
     void initMSFBO();
     void initIFBO();

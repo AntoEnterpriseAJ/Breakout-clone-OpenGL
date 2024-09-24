@@ -1,5 +1,6 @@
 #include "PostProcessor.h"
 #include "glad/glad.h"
+#include "GLFW/glfw3.h"
 #include <iostream>
 
 static constexpr unsigned int samples = 4;
@@ -15,7 +16,7 @@ PostProcessor::PostProcessor(const Shader& shader, unsigned int screenWidth, uns
 void PostProcessor::beginOffscreenRendering()
 {
     glBindFramebuffer(GL_FRAMEBUFFER, m_MSFBO);
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 }
 
@@ -63,18 +64,28 @@ void PostProcessor::render() const
     glBlitFramebuffer(0, 0, m_screenWidth, m_screenHeight, 0, 0, m_screenWidth, m_screenHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     glBindVertexArray(m_screenQuadVAO);
-    m_shader.use();
+    m_shader.bind();
     m_shader.setInt("tex", 0);
-    m_shader.setBool("effectSharpen", true);
+    m_shader.setFloat("time", glfwGetTime());
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_intermediaryColorBuffer);
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+}
+
+void PostProcessor::startEffect(const std::string& effectName) const
+{
+    m_shader.setBool(effectName, true);
+}
+
+void PostProcessor::stopEffect(const std::string& effectName) const
+{
+    m_shader.setBool(effectName, false);
 }
 
 void PostProcessor::initMSFBO()
