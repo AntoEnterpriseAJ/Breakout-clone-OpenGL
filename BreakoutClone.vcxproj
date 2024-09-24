@@ -144,6 +144,7 @@
     <ClCompile Include="src\GameLevel.cpp" />
     <ClCompile Include="src\GameObject.cpp" />
     <ClCompile Include="src\glad.c" />
+    <ClCompile Include="src\include\GameConstants.h" />
     <ClCompile Include="src\ParticleGenerator.cpp" />
     <ClCompile Include="src\PostProcessor.cpp" />
     <ClCompile Include="src\ResourceManager.cpp" />
