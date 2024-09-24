@@ -64,7 +64,7 @@ int main(void)
     else 
         std::cout << "WARNING: Failed to initialize debug output" << std::endl;
 
-    //glfwSwapInterval(0); 
+    //glfwSwapInterval(0);
     glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
     // Generate grid vertices
@@ -93,7 +93,7 @@ int main(void)
 
     // Set up VAO and VBO
     ResourceManager::loadShader("res/shaders/test.vert", "res/shaders/test.frag", "testShader");
-    ResourceManager::getShader("testShader").use();
+    ResourceManager::getShader("testShader").bind();
 
     unsigned int gridVAO, gridVBO;
     glGenVertexArrays(1, &gridVAO);
@@ -120,6 +120,7 @@ int main(void)
     while (!glfwWindowShouldClose(window))
     {
         game.render();
+        game.update();
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);

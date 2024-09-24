@@ -15,7 +15,7 @@ SpriteRenderer::~SpriteRenderer()
 void SpriteRenderer::drawSprite(const Texture2D& texture, const glm::vec2& position, const glm::vec2& size,
                                 float rotateAngle, const glm::vec3& color) const
 {
-    m_shader.use();
+    m_shader.bind();
 
     glm::mat4 model(1.0f);
     model = glm::translate(model, glm::vec3(position, 0.0f));

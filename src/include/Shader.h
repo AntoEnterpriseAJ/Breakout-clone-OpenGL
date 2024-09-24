@@ -22,7 +22,7 @@ public:
 
     int getUniformLocation(const std::string& name) const;
     unsigned int getID() const;
-    void use() const;
+    void bind() const;
 
     void setBool(const std::string& name, bool value) const;
     void setInt(const std::string& name, int value) const;

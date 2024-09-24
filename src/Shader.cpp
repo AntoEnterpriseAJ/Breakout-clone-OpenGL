@@ -77,7 +77,7 @@ Shader::Shader(const char* vertexSource, const char* fragmentSource)
     glDeleteShader(vertexShader), glDeleteShader(fragmentShader);
 }
 
-void Shader::use() const
+void Shader::bind() const
 {
     glUseProgram(m_ID);
 }

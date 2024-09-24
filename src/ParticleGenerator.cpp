@@ -43,7 +43,7 @@ ParticleGenerator::ParticleGenerator(Particle& particle, int maxParticleCount)
 
 void ParticleGenerator::render(const Shader& particleShader)
 {
-    particleShader.use();
+    particleShader.bind();
     particleShader.setInt("particleTexture", 0);
 
     glActiveTexture(GL_TEXTURE0);
