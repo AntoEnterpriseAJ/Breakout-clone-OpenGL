@@ -18,6 +18,7 @@ public:
 
     Game(GLFWwindow* window,unsigned int width, unsigned int height);
 
+    void update();
     void render();
 
 private:

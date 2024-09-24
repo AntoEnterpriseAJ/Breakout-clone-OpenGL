@@ -5,6 +5,7 @@
 #include "BallObject.h"
 #include "ParticleGenerator.h"
 #include "PostProcessor.h"
+#include "GameConstants.h"
 
 // TODO: fix useless static variables
 static float deltaTime           = 0.0f;
@@ -14,6 +15,8 @@ static glm::vec2 paddlePosition  = {static_cast<float>(800) / 2.0f - paddleSize.
 static float paddleSpeed         = 500.0f;
 static float ballRadius          = 15.0f;
 static glm::vec2 ballPosition    = {paddlePosition.x + paddleSize.x / 2.0f - ballRadius, paddlePosition.y - ballRadius * 2.0f};
+
+static float shakeTime = 0.0f;
 
 static const glm::vec2 ballInitialVelocity = glm::vec2{0.0f, -350.0f};
 
@@ -29,11 +32,6 @@ Game::Game(GLFWwindow* window,unsigned int width, unsigned int height)
 
 void Game::render()
 {
-    auto currentTime = glfwGetTime();
-    deltaTime = currentTime - lastTime;
-    lastTime  = currentTime;
-
-    processInput();
     if (m_state == GAME_ACTIVE)
     {
         postProcessor->beginOffscreenRendering();
@@ -42,14 +40,35 @@ void Game::render()
         m_levels[m_currentLevel].draw(m_spriteRenderer);
         playerPaddle->draw(m_spriteRenderer);
 
-        ball->move(deltaTime, m_width);
-        handleCollisions();
-        particleGenerator->update(*ball, deltaTime);
         particleGenerator->render(ResourceManager::getShader("particleShader"));
         ball->draw(m_spriteRenderer);
 
         postProcessor->endOffscreenRendering();
         postProcessor->render();
+    }
+}
+
+void Game::update()
+{
+    float currentTime = glfwGetTime();
+    deltaTime = currentTime - lastTime;
+    lastTime  = currentTime;
+
+    processInput();
+    ball->move(deltaTime, m_width);
+    handleCollisions();
+    particleGenerator->update(*ball, deltaTime);
+
+    shakeTime -= deltaTime;
+    if (shakeTime < 0)
+    {
+        postProcessor->stopEffect("effectShake");
+    }
+
+    // TODO: the sole porpose of this is testing effects
+    if (glfwGetKey(m_window, GLFW_KEY_O) == GLFW_PRESS)
+    {
+        postProcessor->startEffect("effectChaos");
     }
 }
 
@@ -97,6 +116,12 @@ void Game::handleCollisions()
         if (brickCollision)
         {
             ball->getPositionRef() += offset;   // get the ball out of the object it collides with
+
+            if (!brick.isBreakable())
+            {
+                postProcessor->startEffect("effectShake");
+                shakeTime = GameConstants::shakeTime;
+            }
 
             if (brick.isBreakable())
             {
@@ -177,10 +202,10 @@ void Game::init()
     glm::mat4 projection = orthographicProjection(0.0f, (float)m_width, (float)m_height, 0.0f, -1.0f, 1.0f);
 
     Shader& spriteShader = ResourceManager::getShader("spriteShader");
-    spriteShader.use();
+    spriteShader.bind();
     spriteShader.setMat4("projection", projection);
 
     Shader& particleShader = ResourceManager::getShader("particleShader");
-    particleShader.use();
+    particleShader.bind();
     particleShader.setMat4("projection", projection);
 }
