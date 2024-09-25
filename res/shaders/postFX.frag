@@ -55,33 +55,41 @@ void main()
 			vec2(-xOffset, yOffset) , vec2(0, yOffset) , vec2(xOffset, yOffset) ,  // BOTTOM
 		};
 
-		float kernel[9];
 		vec3  pixels[9];
 		for (int i = 0; i < 9; ++i)
 		{
 			pixels[i] = vec3(texture(tex, texPos.xy + offsets[i]));
 		}
 
-		if (effectShake)	    kernel = kernelBlur;
-		else if (effectConfuse) kernel = kernelBlur;
-		else if (effectChaos)	kernel = kernelEdgeDetection;
+		vec3 resultColor = vec3(0.0);
 
-		vec3 color = vec3(0.0);
-		for (int i = 0; i < 9; ++i)
+		if (effectShake)
 		{
-			color += pixels[i] * kernel[i];
+			for (int i = 0; i < 9; ++i)
+			{
+				resultColor += pixels[i] * kernelBlur[i];
+			}
+		}
+
+		if (effectChaos)
+		{
+			vec3 chaosColor = vec3(0.0);
+			for (int i = 0; i < 9; ++i)
+			{
+				chaosColor += pixels[i] * kernelEdgeDetection[i];
+			}
+			resultColor = chaosColor;
 		}
 
 		if (effectConfuse)
 		{
-			invertColors(color);
+			invertColors(resultColor);
 		}
 
-		fragColor = vec4(color, 1.0f);
+		fragColor = vec4(resultColor, 1.0f);
 		return;
 	}
 
 	fragColor = color;
-
 	return;
 }
