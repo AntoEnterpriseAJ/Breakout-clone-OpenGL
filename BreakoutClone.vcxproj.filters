@@ -66,6 +66,9 @@
     <ClCompile Include="src\include\GameConstants.h">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\PowerUp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\include\Game.h">
@@ -978,6 +981,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\include\PostProcessor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\PowerUp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

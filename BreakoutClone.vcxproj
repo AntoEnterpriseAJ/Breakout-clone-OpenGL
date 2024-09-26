@@ -147,6 +147,7 @@
     <ClCompile Include="src\include\GameConstants.h" />
     <ClCompile Include="src\ParticleGenerator.cpp" />
     <ClCompile Include="src\PostProcessor.cpp" />
+    <ClCompile Include="src\PowerUp.cpp" />
     <ClCompile Include="src\ResourceManager.cpp" />
     <ClCompile Include="src\Shader.cpp" />
     <ClCompile Include="src\SpriteRenderer.cpp" />
@@ -454,6 +455,7 @@
     <ClInclude Include="src\include\GameObject.h" />
     <ClInclude Include="src\include\ParticleGenerator.h" />
     <ClInclude Include="src\include\PostProcessor.h" />
+    <ClInclude Include="src\include\PowerUp.h" />
     <ClInclude Include="src\include\ResourceManager.h" />
     <ClInclude Include="src\include\Shader.h" />
     <ClInclude Include="src\include\SpriteRenderer.h" />
