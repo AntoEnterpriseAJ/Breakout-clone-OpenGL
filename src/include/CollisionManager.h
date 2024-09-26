@@ -24,5 +24,6 @@ public:
     };
 
     CollisionStatus getCollisionStatus(const BallObject& ball, const GameObject& obj); // AABB Circle collision
+    bool            getCollisionStatus(const GameObject& obj1, const GameObject& obj2); // AABB
     Direction       getVectorDirection(const glm::vec2& vec) const;
 };

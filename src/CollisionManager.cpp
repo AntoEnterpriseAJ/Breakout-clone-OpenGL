@@ -28,6 +28,19 @@ CollisionManager::CollisionStatus CollisionManager::getCollisionStatus(const Bal
     return CollisionStatus{false, {}, {}};
 }
 
+bool CollisionManager::getCollisionStatus(const GameObject& obj1, const GameObject& obj2)
+{
+    bool collisionX = obj2.getPosition().x + obj2.getSize().x > obj1.getPosition().x 
+                      && obj1.getPosition().x + obj1.getSize().x > obj2.getPosition().x;
+    bool collisionY = obj2.getPosition().y + obj2.getSize().y > obj1.getPosition().y
+                      && obj1.getPosition().y + obj1.getSize().y > obj2.getPosition().y;
+       
+    if (collisionX && collisionY)
+        return true;
+
+    return false;
+}
+
 CollisionManager::Direction CollisionManager::getVectorDirection(const glm::vec2& vec) const
 {
     glm::vec2 directions[] = {
