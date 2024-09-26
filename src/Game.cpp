@@ -10,13 +10,6 @@
 // TODO: fix useless static variables
 static float deltaTime           = 0.0f;
 static float lastTime            = 0.0f;
-static glm::vec2 paddleSize      = {100.0f, 20.0f};
-static glm::vec2 paddlePosition  = {static_cast<float>(800) / 2.0f - paddleSize.x / 2.0f, static_cast<float>(600) - paddleSize.y};
-static float paddleSpeed         = 500.0f;
-static float ballRadius          = 15.0f;
-static glm::vec2 ballPosition    = {paddlePosition.x + paddleSize.x / 2.0f - ballRadius, paddlePosition.y - ballRadius * 2.0f};
-
-static float shakeTime = 0.0f;
 
 static float shakeTime;
 
@@ -40,6 +33,14 @@ void Game::render()
         m_levels[m_currentLevel].draw(m_spriteRenderer);
         playerPaddle->draw(m_spriteRenderer);
 
+        for (auto& powerUp : m_powerUps)
+        {
+            if (!powerUp.isDestroyed())
+            {
+                powerUp.draw(m_spriteRenderer);
+            }
+        }
+
         particleGenerator->render(ResourceManager::getShader("particleShader"));
         ball->draw(m_spriteRenderer);
 
@@ -58,17 +59,12 @@ void Game::update()
     ball->move(deltaTime, m_width);
     handleCollisions();
     particleGenerator->update(*ball, deltaTime);
+    updatePowerUps();
 
     shakeTime -= deltaTime;
     if (shakeTime < 0)
     {
         postProcessor->stopEffect("effectShake");
-    }
-
-    // TODO: the sole porpose of this is testing effects
-    if (glfwGetKey(m_window, GLFW_KEY_O) == GLFW_PRESS)
-    {
-        postProcessor->startEffect("effectChaos");
     }
 }
 
@@ -77,7 +73,7 @@ void Game::processInput()
     if (glfwGetKey(m_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(m_window, GLFW_TRUE);
 
-    float paddleVelocity = paddleSpeed * deltaTime;
+    float paddleVelocity = GameConstants::initPadSpeed * deltaTime;
 
     if (glfwGetKey(m_window, GLFW_KEY_A) == GLFW_PRESS || glfwGetKey(m_window, GLFW_KEY_LEFT) == GLFW_PRESS)
     {
@@ -98,6 +94,92 @@ void Game::processInput()
     if (glfwGetKey(m_window, GLFW_KEY_SPACE) == GLFW_PRESS)
     {
         ball->leavePaddle();
+    }
+}
+
+void Game::trySpawnPowerUp(const GameObject& brick)
+{
+    if (rand() % 100 < 99)
+    {
+        glm::vec2 size = {50.0f, 20.0f};
+        glm::vec2 spawnPoint = brick.getPosition() + glm::vec2{brick.getSize().x, brick.getSize().y} / 2.0f - size / 2.0f;
+
+        for (int i = 0; i < m_powerUps.size(); ++i)
+        {
+            if (!m_powerUps[i].isDestroyed())
+                continue; 
+
+            PowerUp::Type effect = (PowerUp::Type)(rand() % (int)PowerUp::Type::count);
+            float duration       = 0.0f;
+            std::string texture  = "";
+
+            if (effect == PowerUp::Type::speedUp)
+            {
+                duration = GameConstants::effectSpeedUpTime;
+                texture = "powerup_speed";
+            }
+            else if (effect == PowerUp::Type::confuse)
+            {
+                duration = GameConstants::effectConfuseTime;
+                texture = "powerup_confuse";
+            }
+            else if (effect == PowerUp::Type::chaos)
+            {
+                duration = GameConstants::effectChaosTime;
+                texture = "powerup_chaos";
+            }
+
+            m_powerUps[i] = PowerUp{ResourceManager::getTexture(texture), spawnPoint, size, effect, duration};
+            return;
+        }
+    }
+}
+
+void Game::updatePowerUps()
+{
+    for (auto& powerUp : m_powerUps)
+    {
+        if (!powerUp.isDestroyed())
+            powerUp.updateMove(deltaTime, m_height);
+
+        if (powerUp.isActive())
+        {
+            powerUp.updatEffectDuration(deltaTime);
+
+            if(!powerUp.isActive())
+            {
+                if (powerUp.getType() == PowerUp::Type::speedUp)
+                {
+                    ball->getVelocityRef() /= 1.15f;
+                }
+                else if (powerUp.getType() == PowerUp::Type::confuse)
+                {
+                    postProcessor->stopEffect("effectConfuse");
+                }
+                else if (powerUp.getType() == PowerUp::Type::chaos)
+                {
+                    postProcessor->stopEffect("effectChaos");
+                }
+            }
+        }
+    }
+}
+
+void Game::activatePowerUp(PowerUp& powerUp)
+{
+    powerUp.activate();
+
+    if (powerUp.getType() == PowerUp::Type::speedUp)
+    {
+        ball->getVelocityRef() *= 1.15f;
+    }
+    else if (powerUp.getType() == PowerUp::Type::confuse)
+    {
+        postProcessor->startEffect("effectConfuse");
+    }
+    else if (powerUp.getType() == PowerUp::Type::chaos)
+    {
+        postProcessor->startEffect("effectChaos");
     }
 }
 
@@ -125,6 +207,7 @@ void Game::handleCollisions()
 
             if (brick.isBreakable())
             {
+                trySpawnPowerUp(brick);
                 brick.destroy();
             }
 
@@ -155,6 +238,19 @@ void Game::handleCollisions()
             ball->getVelocityRef() = bounceDirection * glm::length(ball->getVelocity());
         }
     }
+
+    for (auto& powerUp : m_powerUps)
+    {
+        if (powerUp.isDestroyed())
+            continue;
+
+        bool collision = m_collisionManager.getCollisionStatus(*playerPaddle, powerUp);
+        if (collision)
+        {
+            activatePowerUp(powerUp);
+            powerUp.destroy();
+        }
+    }
 }
 
 void Game::init()
@@ -165,6 +261,9 @@ void Game::init()
     ResourceManager::loadTexture("res/textures/block.png", "block");
     ResourceManager::loadTexture("res/textures/paddle.png", "paddle");
     ResourceManager::loadTexture("res/textures/particle.png", "particle");
+    ResourceManager::loadTexture("res/textures/powerup_speed.png", "powerup_speed");
+    ResourceManager::loadTexture("res/textures/powerup_confuse.png", "powerup_confuse");
+    ResourceManager::loadTexture("res/textures/powerup_chaos.png", "powerup_chaos");
 
     ResourceManager::loadShader("res/shaders/sprite.vert", "res/shaders/sprite.frag", "spriteShader");
     ResourceManager::loadShader("res/shaders/particle.vert", "res/shaders/particle.frag", "particleShader");
@@ -182,8 +281,10 @@ void Game::init()
 
     ParticleGenerator::Particle particle{ResourceManager::getTexture("particle"), 15.0f, 1.0f, 0.5};
 
-    playerPaddle        = std::make_unique<GameObject>(ResourceManager::getTexture("paddle"), paddlePosition, paddleSize);
-    ball                = std::make_unique<BallObject>(ResourceManager::getTexture("ball"), ballPosition, ballInitialVelocity, ballRadius);
+    playerPaddle        = std::make_unique<GameObject>(ResourceManager::getTexture("paddle"), GameConstants::initPadPos,
+                                                       GameConstants::initPadSize);
+    ball                = std::make_unique<BallObject>(ResourceManager::getTexture("ball"), GameConstants::initBallPos,
+                                                       GameConstants::ballInitVel, GameConstants::initBallRadius);
     m_spriteRenderer    = std::make_unique<SpriteRenderer>(ResourceManager::getShader("spriteShader"));
     particleGenerator   = std::make_unique<ParticleGenerator>(particle, 100);
     postProcessor       = std::make_unique<PostProcessor>(ResourceManager::getShader("postFX"), m_width, m_height);

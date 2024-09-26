@@ -4,6 +4,8 @@
 #include "GameLevel.h"
 #include "BallObject.h"
 #include "CollisionManager.h"
+#include "PowerUp.h"
+#include <array>
 #include <memory>
 
 class Game
@@ -24,6 +26,9 @@ public:
 private:
     void init();
     void processInput();
+    void trySpawnPowerUp(const GameObject& brick);
+    void updatePowerUps();
+    void activatePowerUp(PowerUp& powerUp);
     void handleCollisions();
 private:
     GLFWwindow*  m_window;
@@ -34,5 +39,7 @@ private:
     CollisionManager                m_collisionManager;
     std::unique_ptr<SpriteRenderer> m_spriteRenderer;
     std::vector<GameLevel>          m_levels;
+    std::array<PowerUp, 32>         m_powerUps;
+
     std::unique_ptr<GameObject>     playerPaddle;
 };
