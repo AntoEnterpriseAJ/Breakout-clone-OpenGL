@@ -5,13 +5,6 @@
 class PostProcessor
 {
 public:
-    enum class Effect
-    {
-        normal   ,
-        inversion,
-        count    ,
-    };
-
     PostProcessor(const Shader& shader, unsigned int screenWidth, unsigned int screenHeight);
 
     void beginOffscreenRendering();
