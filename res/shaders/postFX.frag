@@ -45,51 +45,51 @@ void grayScale(inout vec3 color)
 
 void main()
 {
-	vec4 color = texture(tex, texPos);
+    vec4 baseColor = texture(tex, texPos);
+    vec3 pixels[9];
 
-	if (effectShake || effectConfuse || effectChaos)
-	{
-		const vec2 offsets[] = {
-			vec2(-xOffset, -yOffset), vec2(0, -yOffset), vec2(xOffset, -yOffset),  // TOP
-			vec2(-xOffset, 0)		, vec2(0, 0)	   , vec2(xOffset, 0)	    ,  // MIDDLE
-			vec2(-xOffset, yOffset) , vec2(0, yOffset) , vec2(xOffset, yOffset) ,  // BOTTOM
-		};
+    const vec2 offsets[] = {
+        vec2(-xOffset, -yOffset), vec2(0, -yOffset), vec2(xOffset, -yOffset)  ,  // TOP
+        vec2(-xOffset, 0)        , vec2(0, 0)       , vec2(xOffset, 0)        ,  // MIDDLE
+        vec2(-xOffset, yOffset)  , vec2(0, yOffset) , vec2(xOffset, yOffset)  ,  // BOTTOM
+    };
 
-		vec3  pixels[9];
-		for (int i = 0; i < 9; ++i)
-		{
-			pixels[i] = vec3(texture(tex, texPos.xy + offsets[i]));
-		}
+    if (effectChaos || effectShake)
+    {
+        for (int i = 0; i < 9; i++)
+        {
+            pixels[i] = vec3(texture(tex, texPos.xy + offsets[i]));
+        }
+    }
 
-		vec3 resultColor = vec3(0.0);
-
-		if (effectShake)
-		{
-			for (int i = 0; i < 9; ++i)
-			{
-				resultColor += pixels[i] * kernelBlur[i];
-			}
-		}
-
-		if (effectChaos)
-		{
-			vec3 chaosColor = vec3(0.0);
-			for (int i = 0; i < 9; ++i)
-			{
-				chaosColor += pixels[i] * kernelEdgeDetection[i];
-			}
-			resultColor = chaosColor;
-		}
-
-		if (effectConfuse)
-		{
-			invertColors(resultColor);
-		}
-
-		fragColor = vec4(resultColor, 1.0f);
+    if (effectChaos)
+    {
+        for (int i = 0; i < 9; i++)
+        {
+            fragColor += vec4(pixels[i] * kernelEdgeDetection[i], 0.0f);
+        }
+		fragColor.a = 1.0f;
 		return;
-	}
+    }
 
-	fragColor = color;
-	return;
+    if (effectShake)
+    {
+        for (int i = 0; i < 9; i++)
+        {
+            fragColor += vec4(pixels[i] * kernelBlur[i], 0.0f);
+        }
+    }
+
+    if (fragColor == vec4(0.0f))
+    {
+        fragColor = baseColor;
+    }
+
+    if (effectConfuse)
+    {
+        invertColors(fragColor.rgb);
+    }
+
+    fragColor.a = 1.0f;
 }
+

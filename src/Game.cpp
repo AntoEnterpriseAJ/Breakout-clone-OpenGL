@@ -18,7 +18,7 @@ static glm::vec2 ballPosition    = {paddlePosition.x + paddleSize.x / 2.0f - bal
 
 static float shakeTime = 0.0f;
 
-static const glm::vec2 ballInitialVelocity = glm::vec2{0.0f, -350.0f};
+static float shakeTime;
 
 static std::unique_ptr<BallObject>          ball;
 static std::unique_ptr<ParticleGenerator>   particleGenerator;
