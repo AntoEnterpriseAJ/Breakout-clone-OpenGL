@@ -20,6 +20,7 @@ public:
     bool isDestroyed() const;
 
     glm::vec2& getPositionRef();
+    glm::vec2& getSizeRef();
     void destroy();
 
 protected:
