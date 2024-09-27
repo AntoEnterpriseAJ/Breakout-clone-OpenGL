@@ -31,6 +31,16 @@ bool PowerUp::isActive() const
     return m_active;
 }
 
+float PowerUp::getDuration() const
+{
+    return m_duration;
+}
+
+void PowerUp::setDuration(float duration)
+{
+    m_duration = duration;
+}
+
 void PowerUp::updateMove(float deltaTime, unsigned int screenHeight)
 {
     glm::vec2 vel = GameConstants::initPowerUpVel;

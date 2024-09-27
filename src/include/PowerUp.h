@@ -19,9 +19,11 @@ public:
     PowerUp(const Texture2D& sprite, glm::vec2 pos, glm::vec2 size, PowerUp::Type type, float duration);
     PowerUp& operator=(const PowerUp& other);
     
-    Type getType() const;
-    bool isActive() const;
+    Type  getType() const;
+    bool  isActive() const;
+    float getDuration() const;
 
+    void setDuration(float duration);
     void updateMove(float deltaTime, unsigned int screenHeight);
     void updatEffectDuration(float deltaTime);
     void activate();

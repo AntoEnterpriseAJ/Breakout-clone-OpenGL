@@ -39,7 +39,9 @@ private:
     CollisionManager                m_collisionManager;
     std::unique_ptr<SpriteRenderer> m_spriteRenderer;
     std::vector<GameLevel>          m_levels;
-    std::array<PowerUp, 32>         m_powerUps;
+
+    std::unordered_map<PowerUp::Type, PowerUp> m_lastEffect;
+    std::array<PowerUp, 32>         m_powerUpSpawns;
 
     std::unique_ptr<GameObject>     playerPaddle;
 };

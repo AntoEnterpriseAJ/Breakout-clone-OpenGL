@@ -33,7 +33,7 @@ void Game::render()
         m_levels[m_currentLevel].draw(m_spriteRenderer);
         playerPaddle->draw(m_spriteRenderer);
 
-        for (auto& powerUp : m_powerUps)
+        for (auto& powerUp : m_powerUpSpawns)
         {
             if (!powerUp.isDestroyed())
             {
@@ -104,9 +104,9 @@ void Game::trySpawnPowerUp(const GameObject& brick)
         glm::vec2 size = {50.0f, 20.0f};
         glm::vec2 spawnPoint = brick.getPosition() + glm::vec2{brick.getSize().x, brick.getSize().y} / 2.0f - size / 2.0f;
 
-        for (int i = 0; i < m_powerUps.size(); ++i)
+        for (int i = 0; i < m_powerUpSpawns.size(); ++i)
         {
-            if (!m_powerUps[i].isDestroyed())
+            if (!m_powerUpSpawns[i].isDestroyed())
                 continue; 
 
             PowerUp::Type effect = (PowerUp::Type)(rand() % (int)PowerUp::Type::count);
@@ -129,7 +129,7 @@ void Game::trySpawnPowerUp(const GameObject& brick)
                 texture = "powerup_chaos";
             }
 
-            m_powerUps[i] = PowerUp{ResourceManager::getTexture(texture), spawnPoint, size, effect, duration};
+            m_powerUpSpawns[i] = PowerUp{ResourceManager::getTexture(texture), spawnPoint, size, effect, duration};
             return;
         }
     }
@@ -137,11 +137,14 @@ void Game::trySpawnPowerUp(const GameObject& brick)
 
 void Game::updatePowerUps()
 {
-    for (auto& powerUp : m_powerUps)
+    for (auto& powerUp : m_powerUpSpawns)
     {
         if (!powerUp.isDestroyed())
             powerUp.updateMove(deltaTime, m_height);
+    }
 
+    for (auto& [type, powerUp] : m_lastEffect)
+    {
         if (powerUp.isActive())
         {
             powerUp.updatEffectDuration(deltaTime);
@@ -150,7 +153,7 @@ void Game::updatePowerUps()
             {
                 if (powerUp.getType() == PowerUp::Type::speedUp)
                 {
-                    ball->getVelocityRef() /= 1.15f;
+                    ball->getVelocityRef() /= GameConstants::speedUpMultiplier;
                 }
                 else if (powerUp.getType() == PowerUp::Type::confuse)
                 {
@@ -168,18 +171,29 @@ void Game::updatePowerUps()
 void Game::activatePowerUp(PowerUp& powerUp)
 {
     powerUp.activate();
+    PowerUp::Type effect = powerUp.getType();
 
-    if (powerUp.getType() == PowerUp::Type::speedUp)
+    if (m_lastEffect[effect].getDuration() > 0)
     {
-        ball->getVelocityRef() *= 1.15f;
+        m_lastEffect[effect].setDuration(powerUp.getDuration());
     }
-    else if (powerUp.getType() == PowerUp::Type::confuse)
+    else
     {
+        m_lastEffect[effect] = powerUp;
+        m_lastEffect[effect].activate();
+
+        if (powerUp.getType() == PowerUp::Type::speedUp)
+        {
+        ball->getVelocityRef() *= GameConstants::speedUpMultiplier;
+        }
+        else if (powerUp.getType() == PowerUp::Type::confuse)
+        {
         postProcessor->startEffect("effectConfuse");
-    }
-    else if (powerUp.getType() == PowerUp::Type::chaos)
-    {
+        }
+        else if (powerUp.getType() == PowerUp::Type::chaos)
+        {
         postProcessor->startEffect("effectChaos");
+        }
     }
 }
 
@@ -239,7 +253,7 @@ void Game::handleCollisions()
         }
     }
 
-    for (auto& powerUp : m_powerUps)
+    for (auto& powerUp : m_powerUpSpawns)
     {
         if (powerUp.isDestroyed())
             continue;
