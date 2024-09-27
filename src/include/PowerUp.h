@@ -12,6 +12,7 @@ public:
         speedUp,
         confuse,
         chaos,
+        increase,
         count,
     };
 

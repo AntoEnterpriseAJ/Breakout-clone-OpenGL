@@ -33,13 +33,7 @@ void Game::render()
         m_levels[m_currentLevel].draw(m_spriteRenderer);
         playerPaddle->draw(m_spriteRenderer);
 
-        for (auto& powerUp : m_powerUpSpawns)
-        {
-            if (!powerUp.isDestroyed())
-            {
-                powerUp.draw(m_spriteRenderer);
-            }
-        }
+        renderPowerUpSpawns();
 
         particleGenerator->render(ResourceManager::getShader("particleShader"));
         ball->draw(m_spriteRenderer);
@@ -128,6 +122,11 @@ void Game::trySpawnPowerUp(const GameObject& brick)
                 duration = GameConstants::effectChaosTime;
                 texture = "powerup_chaos";
             }
+            else if (effect == PowerUp::Type::increase)
+            {
+                duration = GameConstants::effectIncreaseTime;
+                texture = "powerup_increase";
+            }
 
             m_powerUpSpawns[i] = PowerUp{ResourceManager::getTexture(texture), spawnPoint, size, effect, duration};
             return;
@@ -154,6 +153,13 @@ void Game::updatePowerUps()
                 if (powerUp.getType() == PowerUp::Type::speedUp)
                 {
                     ball->getVelocityRef() /= GameConstants::speedUpMultiplier;
+                }
+                else if (powerUp.getType() == PowerUp::Type::increase)
+                {
+                    float oldWidth = playerPaddle->getSize().x;
+
+                    playerPaddle->getPositionRef().x += (oldWidth - GameConstants::initPadSize.x) / 2.0f;
+                    playerPaddle->getSizeRef().x /= GameConstants::effectIncreaseMultiplier;
                 }
                 else if (powerUp.getType() == PowerUp::Type::confuse)
                 {
@@ -184,15 +190,23 @@ void Game::activatePowerUp(PowerUp& powerUp)
 
         if (powerUp.getType() == PowerUp::Type::speedUp)
         {
-        ball->getVelocityRef() *= GameConstants::speedUpMultiplier;
+            ball->getVelocityRef() *= GameConstants::speedUpMultiplier;
+        }
+        else if (powerUp.getType() == PowerUp::Type::increase)
+        {
+            float oldWidth = playerPaddle->getSize().x;
+            float newWidth = oldWidth * GameConstants::effectIncreaseMultiplier;
+
+            playerPaddle->getPositionRef().x -= (newWidth - oldWidth) / 2.0f;
+            playerPaddle->getSizeRef().x = newWidth;
         }
         else if (powerUp.getType() == PowerUp::Type::confuse)
         {
-        postProcessor->startEffect("effectConfuse");
+            postProcessor->startEffect("effectConfuse");
         }
         else if (powerUp.getType() == PowerUp::Type::chaos)
         {
-        postProcessor->startEffect("effectChaos");
+            postProcessor->startEffect("effectChaos");
         }
     }
 }
@@ -267,6 +281,17 @@ void Game::handleCollisions()
     }
 }
 
+void Game::renderPowerUpSpawns()
+{
+    for (auto& powerUp : m_powerUpSpawns)
+    {
+        if (!powerUp.isDestroyed())
+        {
+            powerUp.draw(m_spriteRenderer);
+        }
+    }
+}
+
 void Game::init()
 {
     ResourceManager::loadTexture("res/textures/awesomeface.png", "ball");
@@ -278,6 +303,7 @@ void Game::init()
     ResourceManager::loadTexture("res/textures/powerup_speed.png", "powerup_speed");
     ResourceManager::loadTexture("res/textures/powerup_confuse.png", "powerup_confuse");
     ResourceManager::loadTexture("res/textures/powerup_chaos.png", "powerup_chaos");
+    ResourceManager::loadTexture("res/textures/powerup_increase.png", "powerup_increase");
 
     ResourceManager::loadShader("res/shaders/sprite.vert", "res/shaders/sprite.frag", "spriteShader");
     ResourceManager::loadShader("res/shaders/particle.vert", "res/shaders/particle.frag", "particleShader");

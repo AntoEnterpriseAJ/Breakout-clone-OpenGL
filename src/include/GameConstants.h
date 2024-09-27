@@ -12,8 +12,12 @@ namespace GameConstants
 
    static constexpr glm::vec2 initPowerUpVel = {0.0f, 150.0f};
 
-   static constexpr float effectSpeedUpTime = 5.0f;
-   static constexpr float speedUpMultiplier = 1.3f;
-   static constexpr float effectConfuseTime = 5.0f;
-   static constexpr float effectChaosTime   = 5.0f;
+   static constexpr float effectSpeedUpTime        = 5.0f;
+   static constexpr float speedUpMultiplier        = 1.3f;
+
+   static constexpr float effectIncreaseTime       = 5.0f;
+   static constexpr float effectIncreaseMultiplier = 1.5f;
+
+   static constexpr float effectConfuseTime        = 5.0f;
+   static constexpr float effectChaosTime          = 5.0f;
 }
