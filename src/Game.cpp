@@ -6,16 +6,17 @@
 #include "ParticleGenerator.h"
 #include "PostProcessor.h"
 #include "GameConstants.h"
+#include "irrKlang/irrKlang.h"
 
-// TODO: fix useless static variables
-static float deltaTime           = 0.0f;
-static float lastTime            = 0.0f;
+static float deltaTime = 0.0f;
+static float lastTime  = 0.0f;
 
 static float shakeTime;
 
-static std::unique_ptr<BallObject>          ball;
-static std::unique_ptr<ParticleGenerator>   particleGenerator;
-static std::unique_ptr<PostProcessor>       postProcessor; 
+static std::unique_ptr<BallObject>             ball;
+static std::unique_ptr<irrklang::ISoundEngine> soundEngine;
+static std::unique_ptr<PostProcessor>          postProcessor; 
+static std::unique_ptr<ParticleGenerator>      particleGenerator;
 
 Game::Game(GLFWwindow* window,unsigned int width, unsigned int height)
     : m_window{window}, m_width{width}, m_height{height}, m_currentLevel{0}, m_state{GAME_ACTIVE}
@@ -93,7 +94,7 @@ void Game::processInput()
 
 void Game::trySpawnPowerUp(const GameObject& brick)
 {
-    if (rand() % 100 < 30)
+    if (rand() % 100 <= 30)
     {
         glm::vec2 size = {50.0f, 20.0f};
         glm::vec2 spawnPoint = brick.getPosition() + glm::vec2{brick.getSize().x, brick.getSize().y} / 2.0f - size / 2.0f;
@@ -229,12 +230,14 @@ void Game::handleCollisions()
 
             if (!brick.isBreakable())
             {
+                soundEngine->play2D("res/audio/solid.wav", false);
                 postProcessor->startEffect("effectShake");
                 shakeTime = GameConstants::shakeTime;
             }
 
             if (brick.isBreakable())
             {
+                soundEngine->play2D("res/audio/bleep.mp3", false);
                 trySpawnPowerUp(brick);
                 brick.destroy();
             }
@@ -258,6 +261,7 @@ void Game::handleCollisions()
 
         if (paddleCollision)
         {
+            soundEngine->play2D("res/audio/bleep.wav", false);
             glm::vec2 paddleCenter = playerPaddle->getPosition() + playerPaddle->getSize() / 2.0f;
             glm::vec2 ballCenter   = ball->getPosition() + ball->getSize() / 2.0f;
 
@@ -275,6 +279,7 @@ void Game::handleCollisions()
         bool collision = m_collisionManager.getCollisionStatus(*playerPaddle, powerUp);
         if (collision)
         {
+            soundEngine->play2D("res/audio/powerup.wav", false);
             activatePowerUp(powerUp);
             powerUp.destroy();
         }
@@ -328,6 +333,10 @@ void Game::init()
     m_spriteRenderer    = std::make_unique<SpriteRenderer>(ResourceManager::getShader("spriteShader"));
     particleGenerator   = std::make_unique<ParticleGenerator>(particle, 100);
     postProcessor       = std::make_unique<PostProcessor>(ResourceManager::getShader("postFX"), m_width, m_height);
+    soundEngine         = std::unique_ptr<irrklang::ISoundEngine>(irrklang::createIrrKlangDevice());
+
+    soundEngine->setSoundVolume(0.15f);
+    soundEngine->play2D("res/audio/theme.mp3", true);
 
     auto orthographicProjection = [](float l, float r, float b, float t, float n, float f){
         glm::mat4 ortho = {
