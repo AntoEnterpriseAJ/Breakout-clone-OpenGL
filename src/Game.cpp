@@ -93,7 +93,7 @@ void Game::processInput()
 
 void Game::trySpawnPowerUp(const GameObject& brick)
 {
-    if (rand() % 100 < 99)
+    if (rand() % 100 < 30)
     {
         glm::vec2 size = {50.0f, 20.0f};
         glm::vec2 spawnPoint = brick.getPosition() + glm::vec2{brick.getSize().x, brick.getSize().y} / 2.0f - size / 2.0f;
