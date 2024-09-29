@@ -20,7 +20,7 @@ Texture2D ResourceManager::loadTextureFromFile(const char* texturePath)
     format = GL_RGBA;
     else
     {
-        std::cout << "WARNING: invalid texture format at path: " << texturePath << std::endl;
+        std::cout << "ERROR:TEXTURE2D: invalid texture format at path: " << texturePath << std::endl;
         exit(-1);
     }
 
@@ -67,7 +67,7 @@ Texture2D& ResourceManager::getTexture(const std::string& textureName)
         return m_textures[textureName];
     }
 
-    std::cout << "WARNING: no texture with name: " << textureName << std::endl;
+    std::cout << "ERROR::RESOURCE_MANAGER: no texture with name: " << textureName << std::endl;
     static Texture2D emptyTexture; // Create a static empty texture
     return emptyTexture;
 }
@@ -79,7 +79,7 @@ Shader& ResourceManager::getShader(const std::string& shaderName)
         return m_shaders[shaderName];
     }
 
-    std::cout << "WARNING: no shader with name: " << shaderName << std::endl;
+    std::cout << "ERROR::RESOURCE_MANAGER: no shader with name: " << shaderName << std::endl;
 
     static Shader emptyShader; // Create a static empty shader
     return emptyShader;

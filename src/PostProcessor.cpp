@@ -114,7 +114,7 @@ void PostProcessor::initMSFBO()
     }
     else
     {
-        std::cout << "WARNING: MSFBO creation failed\n" << std::endl;
+        std::cout << "ERROR::MSFBO: MSFBO creation failed\n" << std::endl;
         exit(-1);
     }
 
@@ -150,7 +150,7 @@ void PostProcessor::initIFBO()
     }
     else
     {
-        std::cout << "WARNING: INTERMEDIARY FBO creation failed\n" << std::endl;
+        std::cout << "ERROR::IFBO: INTERMEDIARY FBO creation failed\n" << std::endl;
         exit(-1);
     }
 

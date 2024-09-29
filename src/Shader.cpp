@@ -49,7 +49,7 @@ Shader::Shader(const char* vertexSource, const char* fragmentSource)
         char logMessage[1024];
         glGetShaderInfoLog(vertexShader, 1024, nullptr, logMessage);
 
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << logMessage << std::endl;
+        std::cout << "ERROR::SHADER::VERTEX: COMPILATION_FAILED\n" << logMessage << std::endl;
 
         glDeleteProgram(m_ID);
     }
@@ -65,7 +65,7 @@ Shader::Shader(const char* vertexSource, const char* fragmentSource)
         char logMessage[1024];
         glGetShaderInfoLog(fragmentShader, 1024, nullptr, logMessage);
 
-        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << logMessage << std::endl;
+        std::cout << "ERROR::SHADER::FRAGMENT: COMPILATION_FAILED\n" << logMessage << std::endl;
 
         glDeleteProgram(m_ID);
     }
@@ -95,7 +95,7 @@ void Shader::setBool(const std::string& name, bool value) const
     int location = getUniformLocation(name);
     if (location == -1)
     {
-    std::cout << "WARNING: no uniform " << name << " found" << std::endl;
+        std::cout << "ERROR::SHADER::" << name << ": no uniform " << name << " found" << std::endl;
         return;
     }
 
@@ -107,7 +107,7 @@ void Shader::setInt(const std::string& name, int value) const
     int location = getUniformLocation(name);
     if (location == -1)
     {
-        std::cout << "WARNING: no uniform " << name << " found" << std::endl;
+        std::cout << "ERROR::SHADER::" << name << ": no uniform " << name << " found" << std::endl;
         return;
     }
 
@@ -119,7 +119,7 @@ void Shader::setFloat(const std::string& name, float value) const
     int location = getUniformLocation(name);
     if (location == -1)
     {
-        std::cout << "WARNING: no uniform " << name << " found" << std::endl;
+        std::cout << "ERROR::SHADER::" << name << ": no uniform " << name << " found" << std::endl;
         return;
     }
 
@@ -131,7 +131,7 @@ void Shader::setVec4(const std::string& name, glm::vec4 vec) const
     int location = getUniformLocation(name);
     if (location == -1)
     {
-        std::cout << "WARNING: no uniform " << name << " found" << std::endl;
+        std::cout << "ERROR::SHADER::" << name << ": no uniform " << name << " found" << std::endl;
         return;
     }
 
@@ -143,7 +143,7 @@ void Shader::setVec3(const std::string& name, glm::vec3 vec) const
     int location = getUniformLocation(name);
     if (location == -1)
     {
-        std::cout << "WARNING: no uniform " << name << " found" << std::endl;
+        std::cout << "ERROR::SHADER::" << name << ": no uniform " << name << " found" << std::endl;
         return;
     }
 
@@ -155,7 +155,7 @@ void Shader::setVec2(const std::string& name, glm::vec2 vec) const
     int location = getUniformLocation(name);
     if (location == -1)
     {
-        std::cout << "WARNING: no uniform " << name << " found" << std::endl;
+        std::cout << "ERROR::SHADER::" << name << ": no uniform " << name << " found" << std::endl;
         return;
     }
 
@@ -167,7 +167,7 @@ void Shader::setVec4(const std::string& name, float value) const
     int location = getUniformLocation(name);
     if (location == -1)
     {
-        std::cout << "WARNING: no uniform " << name << " found" << std::endl;
+        std::cout << "ERROR::SHADER::" << name << ": no uniform " << name << " found" << std::endl;
         return;
     }
 
@@ -179,7 +179,7 @@ void Shader::setMat4(const std::string& name, const glm::mat4& mat) const
     int location = getUniformLocation(name);
     if (location == -1)
     {
-        std::cout << "WARNING: no uniform " << name << " found" << std::endl;
+        std::cout << "ERROR::SHADER::" << name << ": no uniform " << name << " found" << std::endl;
         return;
     }
 

@@ -10,7 +10,7 @@ void GameLevel::loadFromFile(const char* filePath, unsigned int levelHeight, uns
 
     if (!fin.is_open())
     {
-        std::cout << "WARNING: can't open level at path: " << filePath << std::endl;
+        std::cout << "ERROR::GAME_LEVEL: can't open level at path: " << filePath << std::endl;
         exit(-1);
     }
 
