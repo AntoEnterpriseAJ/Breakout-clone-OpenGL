@@ -42,7 +42,7 @@ int main(void)
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
-        std::cout << "WARNING: Failed to initialize GLAD" << std::endl;
+        std::cout << "ERROR::GLAD: Failed to initialize GLAD" << std::endl;
         return -1;
     }
     else
@@ -62,7 +62,7 @@ int main(void)
         std::cout << "Succesfully initialized debug output" << std::endl;
     }
     else 
-        std::cout << "WARNING: Failed to initialize debug output" << std::endl;
+        std::cout << "ERROR::DEBUG_OUTPUT: Failed to initialize debug output" << std::endl;
 
     //glfwSwapInterval(0);
     glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
