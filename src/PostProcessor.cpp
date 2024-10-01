@@ -59,6 +59,8 @@ void PostProcessor::initRenderData()
 
 void PostProcessor::render() const
 {
+    m_shader.bind();
+
     glBindFramebuffer(GL_READ_FRAMEBUFFER, m_MSFBO);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_intermediaryFBO);
     glBlitFramebuffer(0, 0, m_screenWidth, m_screenHeight, 0, 0, m_screenWidth, m_screenHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
