@@ -7,6 +7,8 @@
 #include "PostProcessor.h"
 #include "GameConstants.h"
 #include "irrKlang/irrKlang.h"
+#include "TextRenderer.h"
+#include <thread>
 
 static float deltaTime = 0.0f;
 static float lastTime  = 0.0f;
@@ -17,17 +19,20 @@ static std::unique_ptr<BallObject>             ball;
 static std::unique_ptr<irrklang::ISoundEngine> soundEngine;
 static std::unique_ptr<PostProcessor>          postProcessor; 
 static std::unique_ptr<ParticleGenerator>      particleGenerator;
+static std::unique_ptr<TextRenderer> 	       textRenderer;
 
 Game::Game(GLFWwindow* window,unsigned int width, unsigned int height)
-    : m_window{window}, m_width{width}, m_height{height}, m_currentLevel{0}, m_state{GAME_ACTIVE}
+    : m_window{ window }, m_width{ width }, m_height{ height }, m_currentLevel{ 0 }, m_state{ GAME_MENU }, m_lives{ 3 }
 {
     init();
 }
 
 void Game::render()
 {
+
     if (m_state == GAME_ACTIVE)
     {
+        update();
         postProcessor->beginOffscreenRendering();
 
         m_spriteRenderer->drawSprite(ResourceManager::getTexture("background"), {0.0f, 0.0f}, {m_width, m_height}, 0.0f);
@@ -38,9 +43,22 @@ void Game::render()
 
         particleGenerator->render(ResourceManager::getShader("particleShader"));
         ball->draw(m_spriteRenderer);
+        textRenderer->RenderText(ResourceManager::getShader("text"), "Lives: " + std::to_string(m_lives), 5.0f, 570.0f, 0.8);
 
         postProcessor->endOffscreenRendering();
         postProcessor->render();
+    }
+
+    if (m_state == GAME_MENU)
+    {
+        processInput();
+        m_spriteRenderer->drawSprite(ResourceManager::getTexture("background"), { 0.0f, 0.0f }, { m_width, m_height }, 0.0f);
+        m_levels[m_currentLevel].draw(m_spriteRenderer);
+        playerPaddle->draw(m_spriteRenderer);
+        ball->draw(m_spriteRenderer);
+
+        textRenderer->RenderText(ResourceManager::getShader("text"), "Press ENTER to start", 170.0f, m_height / 2.0f, 0.8);
+        textRenderer->RenderText(ResourceManager::getShader("text"), "Press W or S to select a level", 190.0f, m_height / 2.0f - 30.0f, 0.5f);
     }
 }
 
@@ -56,6 +74,22 @@ void Game::update()
     particleGenerator->update(*ball, deltaTime);
     updatePowerUps();
 
+    if (ball->getPosition().y >= m_height)
+    {
+        --m_lives;
+        if (m_lives <= 0)
+        {
+            m_levels[m_currentLevel].reset();
+            m_state = GAME_MENU;
+        }
+
+        ball->stickToPaddle();
+        ball->getPositionRef()         = GameConstants::initBallPos;
+        ball->getVelocityRef()         = GameConstants::ballInitVel;
+        playerPaddle->getPositionRef() = GameConstants::initPadPos;
+        playerPaddle->getSizeRef()     = GameConstants::initPadSize;
+    }
+
     shakeTime -= deltaTime;
     if (shakeTime < 0)
     {
@@ -68,27 +102,49 @@ void Game::processInput()
     if (glfwGetKey(m_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(m_window, GLFW_TRUE);
 
-    float paddleVelocity = GameConstants::initPadSpeed * deltaTime;
+    if (m_state == GAME_ACTIVE)
+    {
+        float paddleVelocity = GameConstants::initPadSpeed * deltaTime;
 
-    if (glfwGetKey(m_window, GLFW_KEY_A) == GLFW_PRESS || glfwGetKey(m_window, GLFW_KEY_LEFT) == GLFW_PRESS)
-    {
-        playerPaddle->getPositionRef().x -= paddleVelocity;
-        if (ball->onPaddle())
+        if (glfwGetKey(m_window, GLFW_KEY_A) == GLFW_PRESS || glfwGetKey(m_window, GLFW_KEY_LEFT) == GLFW_PRESS)
         {
-            ball->getPositionRef().x -= paddleVelocity;
+            playerPaddle->getPositionRef().x -= paddleVelocity;
+            if (ball->onPaddle())
+            {
+                ball->getPositionRef().x -= paddleVelocity;
+            }
+        }
+        if (glfwGetKey(m_window, GLFW_KEY_D) == GLFW_PRESS || glfwGetKey(m_window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+        {
+            playerPaddle->getPositionRef().x += paddleVelocity;
+            if (ball->onPaddle())
+            {
+                ball->getPositionRef().x += paddleVelocity;
+            }
+        }
+        if (glfwGetKey(m_window, GLFW_KEY_SPACE) == GLFW_PRESS)
+        {
+            ball->leavePaddle();
         }
     }
-    if (glfwGetKey(m_window, GLFW_KEY_D) == GLFW_PRESS || glfwGetKey(m_window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+    else if (m_state == GAME_MENU)
     {
-        playerPaddle->getPositionRef().x += paddleVelocity;
-        if (ball->onPaddle())
+        if (glfwGetKey(m_window, GLFW_KEY_ENTER) == GLFW_PRESS)
         {
-            ball->getPositionRef().x += paddleVelocity;
+            m_state = GAME_ACTIVE;
+            m_lives = 3;
         }
-    }
-    if (glfwGetKey(m_window, GLFW_KEY_SPACE) == GLFW_PRESS)
-    {
-        ball->leavePaddle();
+
+        if (glfwGetKey(m_window, GLFW_KEY_S) == GLFW_PRESS)
+		{
+			m_currentLevel = (m_currentLevel - 1) % m_levels.size();
+            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+		}
+        else if (glfwGetKey(m_window, GLFW_KEY_W) == GLFW_PRESS)
+        {
+            m_currentLevel = (m_currentLevel + 1) % m_levels.size();
+            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        }
     }
 }
 
@@ -137,6 +193,8 @@ void Game::trySpawnPowerUp(const GameObject& brick)
 
 void Game::updatePowerUps()
 {
+    ResourceManager::getShader("postFX").bind();
+
     for (auto& powerUp : m_powerUpSpawns)
     {
         if (!powerUp.isDestroyed())
@@ -177,6 +235,7 @@ void Game::updatePowerUps()
 
 void Game::activatePowerUp(PowerUp& powerUp)
 {
+    ResourceManager::getShader("postFX").bind();
     powerUp.activate();
     PowerUp::Type effect = powerUp.getType();
 
@@ -231,6 +290,7 @@ void Game::handleCollisions()
             if (!brick.isBreakable())
             {
                 soundEngine->play2D("res/audio/solid.wav", false);
+                ResourceManager::getShader("postFX").bind();
                 postProcessor->startEffect("effectShake");
                 shakeTime = GameConstants::shakeTime;
             }
@@ -313,6 +373,7 @@ void Game::init()
     ResourceManager::loadShader("res/shaders/sprite.vert", "res/shaders/sprite.frag", "spriteShader");
     ResourceManager::loadShader("res/shaders/particle.vert", "res/shaders/particle.frag", "particleShader");
     ResourceManager::loadShader("res/shaders/postFX.vert", "res/shaders/postFX.frag", "postFX");
+    ResourceManager::loadShader("res/shaders/text.vert", "res/shaders/text.frag", "text");
 
     GameLevel level1; level1.loadFromFile("res/levels/lvl1.txt", m_height / 2, m_width);
     GameLevel level2; level2.loadFromFile("res/levels/lvl2.txt", m_height / 2, m_width);
@@ -334,6 +395,8 @@ void Game::init()
     particleGenerator   = std::make_unique<ParticleGenerator>(particle, 100);
     postProcessor       = std::make_unique<PostProcessor>(ResourceManager::getShader("postFX"), m_width, m_height);
     soundEngine         = std::unique_ptr<irrklang::ISoundEngine>(irrklang::createIrrKlangDevice());
+    textRenderer        = std::make_unique<TextRenderer>( "res/fonts/Astron.otf", 40);
+
 
     soundEngine->setSoundVolume(0.15f);
     soundEngine->play2D("res/audio/theme.mp3", true);
