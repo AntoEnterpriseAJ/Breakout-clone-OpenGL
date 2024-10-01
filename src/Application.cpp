@@ -18,7 +18,6 @@ int main(void)
 {
     GLFWwindow* window;
 
-    /* Initialize the library */
     if (!glfwInit())
         return -1;
 
@@ -27,7 +26,6 @@ int main(void)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true); 
 
-    /* Create a windowed mode window and its OpenGL context */
     window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "BreakoutClone", nullptr, nullptr);
     if (!window)
     {
@@ -35,7 +33,6 @@ int main(void)
         return -1;
     }
 
-    /* Make the window's context current */
     glfwMakeContextCurrent(window);
     glfwSetWindowTitle(window, "BreakoutCLone");
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -67,70 +64,18 @@ int main(void)
     //glfwSwapInterval(0);
     glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-    // Generate grid vertices
-    std::vector<float> gridVertices;
-    int gridSpacing = 5;  // 1-pixel spacing grid
-    for (int x = 0; x <= SCREEN_WIDTH; x += gridSpacing)
-    {
-        float xNormalized = (2.0f * x / SCREEN_WIDTH) - 1.0f;
-
-        gridVertices.push_back(xNormalized);
-        gridVertices.push_back(1.0f);
-        gridVertices.push_back(xNormalized);
-        gridVertices.push_back(-1.0f);
-    }
-    for (int y = 0; y <= SCREEN_HEIGHT; y += gridSpacing)
-    {
-        float yNormalized = (2.0f * y / SCREEN_HEIGHT) - 1.0f;
-
-        gridVertices.push_back(-1.0f);
-        gridVertices.push_back(yNormalized);
-        gridVertices.push_back(1.0f);
-        gridVertices.push_back(yNormalized);
-    }
-
-    int numGridVertices = gridVertices.size() / 2;  // Number of vertices
-
-    // Set up VAO and VBO
-    ResourceManager::loadShader("res/shaders/test.vert", "res/shaders/test.frag", "testShader");
-    ResourceManager::getShader("testShader").bind();
-
-    unsigned int gridVAO, gridVBO;
-    glGenVertexArrays(1, &gridVAO);
-    glGenBuffers(1, &gridVBO);
-
-    glBindVertexArray(gridVAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, gridVBO);
-    glBufferData(GL_ARRAY_BUFFER, gridVertices.size() * sizeof(float), &gridVertices[0], GL_STATIC_DRAW);
-
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-
     Game game{window, SCREEN_WIDTH, SCREEN_HEIGHT};
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // WIREFRAME MODE
 
-    /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
         game.render();
-        game.update();
 
-        /* Swap front and back buffers */
         glfwSwapBuffers(window);
-
-        /* Poll for and process events */
         glfwPollEvents();
     }
-
-    glDeleteVertexArrays(1, &gridVAO);
-    glDeleteBuffers(1, &gridVBO);
 
     glfwTerminate();
     return 0;
