@@ -98,11 +98,7 @@ void Game::update()
             m_state = GAME_MENU;
         }
 
-        ball->stickToPaddle();
-        ball->getPositionRef()         = GameConstants::initBallPos;
-        ball->getVelocityRef()         = GameConstants::ballInitVel;
-        playerPaddle->getPositionRef() = GameConstants::initPadPos;
-        playerPaddle->getSizeRef()     = GameConstants::initPadSize;
+        reset();
     }
 
     shakeTime -= deltaTime;
@@ -165,6 +161,7 @@ void Game::processInput()
 	{
 		if (glfwGetKey(m_window, GLFW_KEY_M) == GLFW_PRESS)
 		{
+            reset();
 			m_state = GAME_MENU;
 			m_currentLevel = 0;
 		}
@@ -401,6 +398,15 @@ void Game::checkWinCondition()
 	{
 		m_state = GAME_WIN;
 	}
+}
+
+void Game::reset()
+{
+    ball->stickToPaddle();
+    ball->getPositionRef() = GameConstants::initBallPos;
+    ball->getVelocityRef() = GameConstants::ballInitVel;
+    playerPaddle->getPositionRef() = GameConstants::initPadPos;
+    playerPaddle->getSizeRef() = GameConstants::initPadSize;
 }
 
 void Game::init()

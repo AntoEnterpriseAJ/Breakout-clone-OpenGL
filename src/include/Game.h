@@ -32,6 +32,7 @@ private:
     void handleCollisions();
     void renderPowerUpSpawns();
 	void checkWinCondition();
+    void reset();
 private:
     GLFWwindow*  m_window;
     GameState    m_state;
