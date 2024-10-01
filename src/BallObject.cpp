@@ -27,6 +27,11 @@ glm::vec2& BallObject::getVelocityRef()
     return m_velocity;
 }
 
+void BallObject::stickToPaddle()
+{
+    m_onPaddle = true;
+}
+
 void BallObject::leavePaddle()
 {
     m_onPaddle = false;

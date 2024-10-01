@@ -46,6 +46,14 @@ void GameLevel::draw(const std::unique_ptr<SpriteRenderer>& spriteRenderer)
     }
 }
 
+void GameLevel::reset()
+{
+    for (auto& brick : m_bricks)
+    {
+        brick.reset();
+    }
+}
+
 std::vector<GameObject>& GameLevel::getBricks()
 {
     return m_bricks;

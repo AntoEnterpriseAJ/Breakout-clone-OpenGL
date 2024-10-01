@@ -61,6 +61,11 @@ glm::vec2& GameObject::getSizeRef()
     return m_size;
 }
 
+void GameObject::reset()
+{
+    m_isDestroyed = false;
+}
+
 void GameObject::destroy()
 {
     m_isDestroyed = true;
