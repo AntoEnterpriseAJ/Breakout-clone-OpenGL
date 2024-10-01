@@ -23,8 +23,13 @@ public:
     void RenderText(const Shader& shader, const std::string& text, float x, float y, float scale = 1.0f, glm::vec3 color = {1.0f, 1.0f, 1.0f});
 
 private:
+    void initRenderData();
+private:
     FT_Library m_FT;
     FT_Face    m_Face;
+
+    unsigned int m_quadVAO;
+    unsigned int m_quadVBO;
 
     std::unordered_map<char, CharacterData> m_characterData;
 };
