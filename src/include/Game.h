@@ -31,6 +31,7 @@ private:
     void activatePowerUp(PowerUp& powerUp);
     void handleCollisions();
     void renderPowerUpSpawns();
+	void checkWinCondition();
 private:
     GLFWwindow*  m_window;
     GameState    m_state;

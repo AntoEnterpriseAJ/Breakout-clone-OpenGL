@@ -29,6 +29,8 @@ Game::Game(GLFWwindow* window,unsigned int width, unsigned int height)
 
 void Game::render()
 {
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     if (m_state == GAME_ACTIVE)
     {
@@ -60,6 +62,18 @@ void Game::render()
         textRenderer->RenderText(ResourceManager::getShader("text"), "Press ENTER to start", 170.0f, m_height / 2.0f, 0.8);
         textRenderer->RenderText(ResourceManager::getShader("text"), "Press W or S to select a level", 190.0f, m_height / 2.0f - 30.0f, 0.5f);
     }
+
+    if (m_state == GAME_WIN)
+    {
+        processInput();
+        m_spriteRenderer->drawSprite(ResourceManager::getTexture("background"), { 0.0f, 0.0f }, { m_width, m_height }, 0.0f);
+        m_levels[m_currentLevel].draw(m_spriteRenderer);
+        playerPaddle->draw(m_spriteRenderer);
+        ball->draw(m_spriteRenderer);
+
+		textRenderer->RenderText(ResourceManager::getShader("text"), "You WON", 290.0f, m_height / 2.0f, 1.0);
+		textRenderer->RenderText(ResourceManager::getShader("text"), "Press M to go back to menu", 230.0f, m_height / 2.0f - 40.0f, 0.5f);
+    }
 }
 
 void Game::update()
@@ -69,6 +83,7 @@ void Game::update()
     lastTime  = currentTime;
 
     processInput();
+	checkWinCondition();
     ball->move(deltaTime, m_width);
     handleCollisions();
     particleGenerator->update(*ball, deltaTime);
@@ -145,7 +160,15 @@ void Game::processInput()
             m_currentLevel = (m_currentLevel + 1) % m_levels.size();
             std::this_thread::sleep_for(std::chrono::milliseconds(200));
         }
-    }
+	}
+	else if (m_state == GAME_WIN)
+	{
+		if (glfwGetKey(m_window, GLFW_KEY_M) == GLFW_PRESS)
+		{
+			m_state = GAME_MENU;
+			m_currentLevel = 0;
+		}
+	}
 }
 
 void Game::trySpawnPowerUp(const GameObject& brick)
@@ -357,6 +380,29 @@ void Game::renderPowerUpSpawns()
     }
 }
 
+void Game::checkWinCondition()
+{
+	bool win = true;
+	for (auto& brick : m_levels[m_currentLevel].getBricks())
+	{
+		if (!brick.isDestroyed() && brick.isBreakable())
+		{
+			win = false;
+			break;
+		}
+	}
+
+	if (glfwGetKey(m_window, GLFW_KEY_O) == GLFW_PRESS)
+	{
+		m_state = GAME_WIN;
+	}
+
+	if (win)
+	{
+		m_state = GAME_WIN;
+	}
+}
+
 void Game::init()
 {
     ResourceManager::loadTexture("res/textures/awesomeface.png", "ball");
@@ -401,17 +447,7 @@ void Game::init()
     soundEngine->setSoundVolume(0.15f);
     soundEngine->play2D("res/audio/theme.mp3", true);
 
-    auto orthographicProjection = [](float l, float r, float b, float t, float n, float f){
-        glm::mat4 ortho = {
-            2.0f / (r - l)  , 0.0f           , 0.0f             , - (r + l) / (r - l),
-            0.0f            , 2.0f / (t - b) , 0.0f             , - (t + b) / (t - b),
-            0.0f            , 0.0f           , - 2.0f / (f - n) , - (f + n) / (f - n),
-            0.0f            , 0.0f           , 0.0f             , 1.0f,
-        };
-
-        return glm::transpose(ortho);
-    };
-
+    glm::mat4 orthographicProjection(float l, float r, float b, float t, float n, float f);
     glm::mat4 projection = orthographicProjection(0.0f, (float)m_width, (float)m_height, 0.0f, -1.0f, 1.0f);
 
     Shader& spriteShader = ResourceManager::getShader("spriteShader");
