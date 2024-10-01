@@ -21,6 +21,7 @@ public:
 
     glm::vec2& getPositionRef();
     glm::vec2& getSizeRef();
+    void reset();
     void destroy();
 
 protected:
