@@ -36,6 +36,7 @@ private:
     GameState    m_state;
     unsigned int m_width, m_height;
     unsigned int m_currentLevel;
+    unsigned int m_lives;
 
     CollisionManager                m_collisionManager;
     std::unique_ptr<SpriteRenderer> m_spriteRenderer;
