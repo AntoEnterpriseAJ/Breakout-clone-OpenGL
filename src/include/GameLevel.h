@@ -10,6 +10,7 @@ public:
 
     void loadFromFile(const char* filePath, unsigned int levelHeight, unsigned int levelWidth);
     void draw(const std::unique_ptr<SpriteRenderer>& spriteRenderer);
+    void reset();
 
     std::vector<GameObject>& getBricks();
 
