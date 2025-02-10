@@ -111,15 +111,4 @@
   <ItemGroup>
     <Library Include="dependencies\lib\glfw3.lib" />
   </ItemGroup>
-  <ItemGroup>
-    <Image Include="..\OpenGLTests\res\images\awesomeface.png">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="E:\dev\OneDrive - Universitatea Transilvania din Brasov\other\Desktop\block.png">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="E:\dev\OneDrive - Universitatea Transilvania din Brasov\other\Desktop\particle.png">
-      <Filter>Resource Files</Filter>
-    </Image>
-  </ItemGroup>
 </Project>
