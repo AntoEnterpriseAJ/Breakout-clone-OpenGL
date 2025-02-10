@@ -59,7 +59,9 @@ std::vector<GameObject>& GameLevel::getBricks()
     return m_bricks;
 }
 
-void GameLevel::init(std::vector<std::vector<unsigned int>> level, unsigned int levelHeight, unsigned int levelWidth)
+void GameLevel::init(
+    std::vector<std::vector<unsigned int>> level, unsigned int levelHeight, unsigned int levelWidth
+)
 {
     unsigned int height = level.size();
     unsigned int width  = level[0].size();

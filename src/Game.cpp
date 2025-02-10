@@ -19,25 +19,29 @@ static std::unique_ptr<BallObject>             ball;
 static std::unique_ptr<irrklang::ISoundEngine> soundEngine;
 static std::unique_ptr<PostProcessor>          postProcessor; 
 static std::unique_ptr<ParticleGenerator>      particleGenerator;
-static std::unique_ptr<TextRenderer> 	       textRenderer;
+static std::unique_ptr<TextRenderer>           textRenderer;
 
 Game::Game(GLFWwindow* window,unsigned int width, unsigned int height)
-    : m_window{ window }, m_width{ width }, m_height{ height }, m_currentLevel{ 0 }, m_state{ GAME_MENU }, m_lives{ 3 }
+    : m_window{ window }, m_width{ width }, m_height{ height }
+    , m_currentLevel{ 0 }, m_state{ GAME_MENU }, m_lives{ 3 }
 {
     init();
 }
 
 void Game::render()
 {
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     if (m_state == GAME_ACTIVE)
     {
         update();
         postProcessor->beginOffscreenRendering();
 
-        m_spriteRenderer->drawSprite(ResourceManager::getTexture("background"), {0.0f, 0.0f}, {m_width, m_height}, 0.0f);
+        m_spriteRenderer->drawSprite(
+            ResourceManager::getTexture("background"), {0.0f, 0.0f}, {m_width, m_height}, 0.0f
+        );
+
         m_levels[m_currentLevel].draw(m_spriteRenderer);
         playerPaddle->draw(m_spriteRenderer);
 
@@ -45,7 +49,10 @@ void Game::render()
 
         particleGenerator->render(ResourceManager::getShader("particleShader"));
         ball->draw(m_spriteRenderer);
-        textRenderer->RenderText(ResourceManager::getShader("text"), "Lives: " + std::to_string(m_lives), 5.0f, 570.0f, 0.8);
+
+        textRenderer->RenderText(
+            ResourceManager::getShader("text"), "Lives: " + std::to_string(m_lives), 5.0f, 570.0f, 0.8
+        );
 
         postProcessor->endOffscreenRendering();
         postProcessor->render();
@@ -54,25 +61,45 @@ void Game::render()
     if (m_state == GAME_MENU)
     {
         processInput();
-        m_spriteRenderer->drawSprite(ResourceManager::getTexture("background"), { 0.0f, 0.0f }, { m_width, m_height }, 0.0f);
+
+        m_spriteRenderer->drawSprite(
+            ResourceManager::getTexture("background"), { 0.0f, 0.0f }, { m_width, m_height }, 0.0f
+        );
+
         m_levels[m_currentLevel].draw(m_spriteRenderer);
         playerPaddle->draw(m_spriteRenderer);
         ball->draw(m_spriteRenderer);
 
-        textRenderer->RenderText(ResourceManager::getShader("text"), "Press ENTER to start", 170.0f, m_height / 2.0f, 0.8);
-        textRenderer->RenderText(ResourceManager::getShader("text"), "Press W or S to select a level", 190.0f, m_height / 2.0f - 30.0f, 0.5f);
+        textRenderer->RenderText(
+            ResourceManager::getShader("text"), "Press ENTER to start", 170.0f, m_height / 2.0f, 0.8
+        );
+
+        textRenderer->RenderText(
+            ResourceManager::getShader("text"), "Press W or S to select a level",
+            190.0f, m_height / 2.0f - 30.0f, 0.5f
+        );
     }
 
     if (m_state == GAME_WIN)
     {
         processInput();
-        m_spriteRenderer->drawSprite(ResourceManager::getTexture("background"), { 0.0f, 0.0f }, { m_width, m_height }, 0.0f);
+
+        m_spriteRenderer->drawSprite(
+            ResourceManager::getTexture("background"), { 0.0f, 0.0f }, { m_width, m_height }, 0.0f
+        );
+
         m_levels[m_currentLevel].draw(m_spriteRenderer);
         playerPaddle->draw(m_spriteRenderer);
         ball->draw(m_spriteRenderer);
 
-		textRenderer->RenderText(ResourceManager::getShader("text"), "You WON", 290.0f, m_height / 2.0f, 1.0);
-		textRenderer->RenderText(ResourceManager::getShader("text"), "Press M to go back to menu", 230.0f, m_height / 2.0f - 40.0f, 0.5f);
+        textRenderer->RenderText(
+            ResourceManager::getShader("text"), "You WON", 290.0f, m_height / 2.0f, 1.0
+        );
+
+        textRenderer->RenderText(
+            ResourceManager::getShader("text"), "Press M to go back to menu",
+            230.0f, m_height / 2.0f - 40.0f, 0.5f
+        );
     }
 }
 
@@ -83,7 +110,7 @@ void Game::update()
     lastTime  = currentTime;
 
     processInput();
-	checkWinCondition();
+    checkWinCondition();
     ball->move(deltaTime, m_width);
     handleCollisions();
     particleGenerator->update(*ball, deltaTime);
@@ -147,25 +174,25 @@ void Game::processInput()
         }
 
         if (glfwGetKey(m_window, GLFW_KEY_S) == GLFW_PRESS)
-		{
-			m_currentLevel = (m_currentLevel - 1) % m_levels.size();
+        {
+            m_currentLevel = (m_currentLevel - 1) % m_levels.size();
             std::this_thread::sleep_for(std::chrono::milliseconds(200));
-		}
+        }
         else if (glfwGetKey(m_window, GLFW_KEY_W) == GLFW_PRESS)
         {
             m_currentLevel = (m_currentLevel + 1) % m_levels.size();
             std::this_thread::sleep_for(std::chrono::milliseconds(200));
         }
-	}
-	else if (m_state == GAME_WIN)
-	{
-		if (glfwGetKey(m_window, GLFW_KEY_M) == GLFW_PRESS)
-		{
+    }
+    else if (m_state == GAME_WIN)
+    {
+        if (glfwGetKey(m_window, GLFW_KEY_M) == GLFW_PRESS)
+        {
             reset();
-			m_state = GAME_MENU;
-			m_currentLevel = 0;
-		}
-	}
+            m_state = GAME_MENU;
+            m_currentLevel = 0;
+        }
+    }
 }
 
 void Game::trySpawnPowerUp(const GameObject& brick)
@@ -173,7 +200,7 @@ void Game::trySpawnPowerUp(const GameObject& brick)
     if (rand() % 100 <= 30)
     {
         glm::vec2 size = {50.0f, 20.0f};
-        glm::vec2 spawnPoint = brick.getPosition() + glm::vec2{brick.getSize().x, brick.getSize().y} / 2.0f - size / 2.0f;
+        glm::vec2 spawnPoint = brick.getPosition() + brick.getSize() / 2.0f - size / 2.0f;
 
         for (int i = 0; i < m_powerUpSpawns.size(); ++i)
         {
@@ -379,25 +406,25 @@ void Game::renderPowerUpSpawns()
 
 void Game::checkWinCondition()
 {
-	bool win = true;
-	for (auto& brick : m_levels[m_currentLevel].getBricks())
-	{
-		if (!brick.isDestroyed() && brick.isBreakable())
-		{
-			win = false;
-			break;
-		}
-	}
+    bool win = true;
+    for (auto& brick : m_levels[m_currentLevel].getBricks())
+    {
+        if (!brick.isDestroyed() && brick.isBreakable())
+        {
+            win = false;
+            break;
+        }
+    }
 
-	if (glfwGetKey(m_window, GLFW_KEY_O) == GLFW_PRESS)
-	{
-		m_state = GAME_WIN;
-	}
+    if (glfwGetKey(m_window, GLFW_KEY_O) == GLFW_PRESS)
+    {
+        m_state = GAME_WIN;
+    }
 
-	if (win)
-	{
-		m_state = GAME_WIN;
-	}
+    if (win)
+    {
+        m_state = GAME_WIN;
+    }
 }
 
 void Game::reset()
@@ -439,10 +466,13 @@ void Game::init()
 
     ParticleGenerator::Particle particle{ResourceManager::getTexture("particle"), 15.0f, 1.0f, 0.5};
 
-    playerPaddle        = std::make_unique<GameObject>(ResourceManager::getTexture("paddle"), GameConstants::initPadPos,
-                                                       GameConstants::initPadSize);
-    ball                = std::make_unique<BallObject>(ResourceManager::getTexture("ball"), GameConstants::initBallPos,
-                                                       GameConstants::ballInitVel, GameConstants::initBallRadius);
+    playerPaddle        = std::make_unique<GameObject>(
+        ResourceManager::getTexture("paddle"), GameConstants::initPadPos, GameConstants::initPadSize
+    );
+    ball                = std::make_unique<BallObject>(
+        ResourceManager::getTexture("ball"), GameConstants::initBallPos,
+        GameConstants::ballInitVel, GameConstants::initBallRadius
+    );
     m_spriteRenderer    = std::make_unique<SpriteRenderer>(ResourceManager::getShader("spriteShader"));
     particleGenerator   = std::make_unique<ParticleGenerator>(particle, 100);
     postProcessor       = std::make_unique<PostProcessor>(ResourceManager::getShader("postFX"), m_width, m_height);
